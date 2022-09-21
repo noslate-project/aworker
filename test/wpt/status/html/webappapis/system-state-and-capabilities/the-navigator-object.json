@@ -1,0 +1,8 @@
+{
+  "historical.https.window.js": {
+    "skip": "window test"
+  },
+  "navigator.any.js": {
+    "skip": "XMLHttpRequest is not defined"
+  }
+}

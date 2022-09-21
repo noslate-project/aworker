@@ -1,0 +1,12 @@
+{
+  "idlharness.any.js": {
+    "fail": "non idl compliant internal",
+    "skip": "non idl compliant internal"
+  },
+  "performance-measure-invalid.worker.js": {
+    "fail": "The 'navigationStart' performance mark has not supported"
+  },
+  "invoke_with_timing_attributes.worker.js": {
+    "fail": "importScript is not implemented"
+  }
+}

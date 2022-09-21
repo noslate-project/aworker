@@ -1,0 +1,10 @@
+{
+  "console-label-conversion.any.js": {
+    "fail": "various console methods are not yet implemented",
+    "skip": "various console methods are not yet implemented"
+  },
+  "idlharness.any.js": {
+    "fail": "fetch is not implemented yet required by idl_test",
+    "skip": "fetch is not implemented yet required by idl_test"
+  }
+}

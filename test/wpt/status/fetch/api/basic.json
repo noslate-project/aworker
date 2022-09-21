@@ -1,0 +1,53 @@
+{
+  "*.window.js": {
+    "fail": "No document object",
+    "skip": "No document object"
+  },
+  "conditional-get.any.js": {
+    "skip": "caching not implemented"
+  },
+  "integrity.sub.any.js": {
+    "skip": "integrity not implemented"
+  },
+  "mode-same-origin.any.js": {
+    "skip": "get-hostinfo.sub.js content is not substituted"
+  },
+  "mode-no-cors.sub.any.js": {
+    "skip": "get-hostinfo.sub.js content is not substituted"
+  },
+  "header-value-combining.any.js": {
+    "fail": "illegal http response format",
+    "skip": "illegal http response format"
+  },
+  "header-value-null-byte.any.js": {
+    "fail": "illegal http response format",
+    "skip": "illegal http response format"
+  },
+  "request-upload.any.js": {
+    "skip": "one-shot request / non-chunked-encoding request"
+  },
+  "referrer.any.js": {
+    "skip": "get-hostinfo.sub.js content is not substituted"
+  },
+  "request-forbidden-headers.any.js": {
+    "skip": "content-length is present as close, which conflicts with the test"
+  },
+  "request-headers.any.js": {
+    "skip": "cors headers not set"
+  },
+  "request-headers-case.any.js": {
+    "skip": "header keys were converted lower cases"
+  },
+  "request-referrer.any.js": {
+    "skip": "referrer is not implemented"
+  },
+  "scheme-blob.sub.any.js": {
+    "skip": "data url not implemented"
+  },
+  "scheme-data.any.js": {
+    "skip": "data url not implemented"
+  },
+  "response-url.sub.any.js": {
+    "skip": "get-hostinfo.sub.js content is not substituted"
+  }
+}

@@ -1,0 +1,264 @@
+syntax = "proto2";
+package aworker.ipc;
+option optimize_for = LITE_RUNTIME;
+
+message KeyValuePair {
+  required string key = 1;
+  required string value = 2;
+}
+
+message ErrorResponseMessage {
+  optional string message = 1;
+  // js stack
+  optional string stack = 2;
+}
+
+/**
+ * MARK: - Streaming
+ */
+
+/**
+ * Opens a steam before an actual request sents out.
+ * This is commonly not required. Agent will start listening for data of the
+ * stream immediately.
+ * Streams are not required to be closed explicitly. They will be closed
+ * immediately once is_eos or is_error is set on StreamPush.
+ */
+message StreamOpenRequestMessage {}
+message StreamOpenResponseMessage {
+  required uint32 sid = 1;
+}
+
+/**
+ * Pushes a chunk to previously opened stream.
+ * This is initiated by the agent.
+ */
+message StreamPushRequestMessage {
+  required uint32 sid = 1;
+  required bool is_eos = 2;
+  optional bytes data = 3;
+  optional bool is_error = 4;
+}
+message StreamPushResponseMessage {}
+
+/**
+ * TODO: Not implemented yet.
+ * Pull a chunk with the advisory size.
+ * This is initiated by the agent.
+ */
+message StreamPullRequestMessage {
+  required uint32 sid = 1;
+  required uint32 size = 2;
+}
+message StreamPullResponseMessage {
+  required bool is_eos = 2;
+  optional bytes data = 3;
+  optional bool is_error = 4;
+}
+
+/**
+ * TODO: Not implemented yet.
+ * Closes a steam. Agent pushing stream will not be closed by explicit close
+ * message.
+ * This is initiated by the agent.
+ */
+message StreamCloseRequestMessage {
+  required uint32 sid = 1;
+}
+message StreamCloseResponseMessage {
+}
+
+/**
+ * MARK: - Worker Metrics
+ */
+message CollectMetricsRequestMessage {
+}
+message IntegerMetricRecord {
+  required string name = 1;
+  repeated KeyValuePair labels = 2;
+  required double value = 3;
+}
+message CollectMetricsResponseMessage {
+  repeated IntegerMetricRecord integer_records = 1;
+}
+
+/**
+ * MARK: - Fetch
+ */
+message FetchRequestMessage {
+  required string url = 1;
+  required string method = 2;
+  repeated KeyValuePair headers = 3;
+  optional uint32 sid = 4;
+  optional uint32 request_id = 5;
+}
+
+message FetchResponseMessage {
+  required int32 status = 1;
+  repeated KeyValuePair headers = 2;
+  required uint32 sid = 3;
+}
+
+message FetchAbortRequestMessage {
+  required uint32 request_id = 1;
+}
+
+message FetchAbortResponseMessage {
+
+}
+
+/**
+ * MARK: - Trigger
+ */
+message TriggerMetadata {
+  optional string url = 1;
+  optional string method = 2;
+  repeated KeyValuePair headers = 3;
+  repeated KeyValuePair baggage = 4;
+  optional string request_id = 5;
+}
+message TriggerRequestMessage {
+  required string method = 1;
+  required TriggerMetadata metadata = 2;
+  // stream id;
+  optional uint32 sid = 3;
+  optional bool has_input_data = 4;
+  optional bool has_output_data = 5;
+}
+message TriggerResponseMessage {
+  required int32 status = 1;
+  required TriggerMetadata metadata = 2;
+}
+
+/**
+ * MARK: - Cendentials
+ */
+enum CredentialTargetType {
+  Data = 1;
+  Diagnostics = 2;
+}
+message CredentialsRequestMessage {
+  required string cred = 1;
+  required CredentialTargetType type = 2;
+}
+message CredentialsResponseMessage {}
+
+/**
+ * MARK: - Dapr
+ */
+message DaprInvokeRequestMessage {
+  required string app_id = 1;
+  required string method_name = 2;
+  required bytes data = 3;
+}
+message DaprInvokeResponseMessage {
+  required int32 status = 1;
+  required bytes data = 2;
+}
+
+message DaprBindingRequestMessage {
+  required string name = 1;
+  required string metadata = 2;
+  required string operation = 3;
+  required bytes data = 4;
+}
+message DaprBindingResponseMessage {
+  required int32 status = 1;
+  required bytes data = 2;
+}
+
+/**
+ * MARK: - Extensions
+ */
+message ExtensionBindingRequestMessage {
+  required string name = 1;
+  required string metadata = 2;
+  required string operation = 3;
+  optional bytes data = 4;
+}
+message ExtensionBindingResponseMessage {
+  required int32 status = 1;
+  optional bytes data = 2;
+}
+
+/**
+ * MARK: - Resource Management
+ */
+message ResourceNotificationRequestMessage {
+  required string resource_id = 1;
+  required string token = 2;
+}
+message ResourceNotificationResponseMessage {
+}
+
+enum ResourcePutAction {
+  ACQUIRE_SH = 0;
+  ACQUIRE_EX = 1;
+  RELEASE = 2;
+}
+message ResourcePutRequestMessage {
+  required ResourcePutAction action = 1;
+  required string resource_id = 2;
+  optional string token = 4;
+}
+message ResourcePutResponseMessage {
+  required bool success_or_acquired = 1;
+  optional string token = 2;
+}
+
+/**
+ * MARK: - Inspectors
+ */
+// Sent from agent to worker
+message InspectorStartRequestMessage {}
+message InspectorStartResponseMessage {}
+
+message InspectorStartSessionRequestMessage {
+ required int32 session_id = 1;
+ required string target_id = 2;
+}
+message InspectorStartSessionResponseMessage {}
+
+message InspectorEndSessionRequestMessage {
+  required int32 session_id = 1;
+}
+message InspectorEndSessionResponseMessage {}
+
+message InspectorTarget {
+  required string id = 1;
+  required string title = 2;
+  required string url = 3;
+}
+message InspectorGetTargetsRequestMessage {}
+message InspectorGetTargetsResponseMessage {
+  repeated InspectorTarget targets = 1;
+}
+
+// Sent from inspector frontend to inspector backend
+message InspectorCommandRequestMessage {
+  required int32 session_id = 1;
+  required string message = 2;
+}
+message InspectorCommandResponseMessage {}
+
+// Sent from inspector backend to inspector frontend
+message InspectorEventRequestMessage {
+  required int32 session_id = 1;
+  required string message = 2;
+}
+message InspectorEventResponseMessage {}
+
+// Sent from worker to agent
+message InspectorStartedRequestMessage {}
+message InspectorStartedResponseMessage {}
+
+/**
+ * MARK: - Tracing
+ */
+message TracingStartRequestMessage {
+  repeated string categories = 1;
+}
+message TracingStartResponseMessage {}
+
+message TracingStopRequestMessage {}
+message TracingStopResponseMessage {}

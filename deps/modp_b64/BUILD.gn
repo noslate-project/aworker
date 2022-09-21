@@ -1,0 +1,66 @@
+# Copyright 2013 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+group("all") {
+  deps = [
+    ":modp_b64",
+  ]
+
+  if (use.fuzzer) {
+    deps += [
+      ":modp_b64_decode_fuzzer",
+      ":modp_b64_encode_fuzzer",
+    ]
+  }
+}
+
+static_library("modp_b64") {
+  configs -= [
+    "//common-mk:use_thin_archive",
+  ]
+  configs += [
+    "//common-mk:nouse_thin_archive",
+  ]
+  sources = [
+    "modp_b64.cc",
+    "modp_b64.h",
+    "modp_b64_data.h",
+  ]
+  include_dirs = [
+    "modp_b64",
+  ]
+}
+
+# Fuzzers.
+if (use.fuzzer) {
+  executable("modp_b64_decode_fuzzer") {
+    configs += [
+      "//common-mk/common_fuzzer",
+    ]
+    deps = [
+      ":modp_b64",
+    ]
+    sources = [
+      "fuzzers/modp_b64_decode_fuzzer.cc",
+    ]
+    include_dirs = [
+      "modp_b64",
+    ]
+  }
+
+  executable("modp_b64_encode_fuzzer") {
+    configs += [
+      "//common-mk/common_fuzzer",
+    ]
+    deps = [
+      ":modp_b64",
+    ]
+    sources = [
+      "fuzzers/modp_b64_encode_fuzzer.cc",
+    ]
+    include_dirs = [
+      "modp_b64",
+    ]
+  }
+}

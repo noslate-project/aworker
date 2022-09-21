@@ -1,0 +1,69 @@
+{
+  "api-invalid-label.any.js": {
+    "fail": "location is not defined",
+    "skip": "location is not defined."
+  },
+  "api-replacement-encodings.any.js": {
+    "fail": "various encoding is not implemented",
+    "skip": "various encoding is not implemented"
+  },
+  "encodeInto.any.js": {
+    "fail": "TODO: encoding into any view of buffer"
+  },
+  "iso-2022-jp-decoder.any.js": {
+    "fail": "various encoding is not implemented",
+    "skip": "various encoding is not implemented"
+  },
+  "streams/*": {
+    "fail": "not implemented.",
+    "skip": "not implemented."
+  },
+  "replacement-encodings.any.js": {
+    "fail": "XMLHttpRequest not implemented.",
+    "skip": "XMLHttpRequest not implemented."
+  },
+  "textdecoder-fatal.any.js": {
+    "fail": "location is not defined",
+    "skip": "location is not defined."
+  },
+  "textdecoder-fatal-streaming.any.js": {
+    "fail": "location is not defined",
+    "skip": "location is not defined."
+  },
+  "textdecoder-fatal-single-byte.any.js": {
+    "fail": "location is not defined",
+    "skip": "location is not defined."
+  },
+  "textdecoder-ignorebom.any.js": {
+    "fail": "utf8-bom is not implemented",
+    "skip": "utf8-bom is not implemented"
+  },
+  "textdecoder-labels.any.js": {
+    "fail": "various encoding is not implemented",
+    "skip": "various encoding is not implemented"
+  },
+  "textdecoder-streaming.any.js": {
+    "fail": "not implemented.",
+    "skip": "not implemented."
+  },
+  "textdecoder-utf16-surrogates.any.js": {
+    "fail": "utf16 not implemented.",
+    "skip": "utf16 not implemented."
+  },
+  "textencoder-constructor-non-utf.any.js": {
+    "fail": "various encoding is not implemented",
+    "skip": "various encoding is not implemented"
+  },
+  "textencoder-utf16-surrogates.any.js": {
+    "fail": "utf16 not implemented.",
+    "skip": "utf16 not implemented."
+  },
+  "unsupported-encodings.any.js": {
+    "fail": "various encoding is not implemented.",
+    "skip": "various encoding is not implemented."
+  },
+  "idlharness.any.js": {
+    "fail": "fetch is not implemented yet required by idl_test",
+    "skip": "fetch is not implemented yet required by idl_test"
+  }
+}

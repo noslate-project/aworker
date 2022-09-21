@@ -1,0 +1,22 @@
+{
+    "protocol": {
+        "path": "aworker_protocol.json",
+        "package": "src/aworker/inspector/protocol",
+        "output": "aworker/inspector/protocol",
+        "namespace": ["aworker", "inspector", "protocol"]
+    },
+    "exported": {
+        "package": "include/inspector",
+        "output": "../../include/inspector",
+        "string_header": "v8-inspector.h",
+        "string_in": "StringView",
+        "string_out": "std::unique_ptr<StringBuffer>",
+        "to_string_out": "StringBufferImpl::adopt(%s)",
+        "export_macro": "V8_EXPORT"
+    },
+    "lib": {
+        "package": "src/aworker/inspector/protocol",
+        "output": "aworker/inspector/protocol",
+        "string_header": "inspector/node_string.h"
+    }
+}

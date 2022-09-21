@@ -1,0 +1,142 @@
+{
+  "flag": {
+    "build-snapshot": {
+      "desc": "Build snapshot mode"
+    },
+    "dump-arguments": {
+      "desc": "dump arguments for debugging"
+    },
+    "experimental-async-context": {
+      "desc": "enable async context api, deprecated"
+    },
+    "experimental-curl-fetch": {
+      "desc": "enable fetch with libcurl (noop)"
+    },
+    "enable-source-maps": {
+      "desc": "enable source map v3 support for stack traces"
+    },
+    "enable-trace-event": {
+      "desc": "enable tracing dump"
+    },
+    "eval": {
+      "short": "e",
+      "desc": "evaluate the script"
+    },
+    "expose-internals": {
+      "desc": "expose internal modules"
+    },
+    "v8-options": {
+      "desc": "print v8 option usages",
+      "var": "v8_options"
+    },
+    "help": {
+      "short": "h",
+      "desc": "print usage"
+    },
+    "has-agent": {
+      "short": "a",
+      "desc": "run aside an agent"
+    },
+    "inspect": {
+      "desc": "start inspector"
+    },
+    "inspect-brk": {
+      "desc": "start inspector and pause on JavaScript entry"
+    },
+    "inspect-brk-aworker": {
+      "desc": "start inspector and pause on aworker JavaScript entry"
+    },
+    "module": {
+      "desc": "parse the input script as ECMAScript Modules"
+    },
+    "no-experimental-curl-fetch": {
+      "desc": "disable fetch with libcurl"
+    },
+    "ref-agent": {
+      "short": "A",
+      "desc": "run aside an ref-ed agent"
+    },
+    "report": {
+      "desc": "generate diagnostic reports on fatal errors"
+    },
+    "report-on-signal": {
+      "desc": "generate diagnostic reports on signal SIGUSR2"
+    },
+    "report-compact": {
+      "desc": "generate diagnostic reports in compact format"
+    },
+    "version": {
+      "short": "v",
+      "desc": "print version string"
+    }
+  },
+  "int": {
+    "max-macro-task-count-per-tick": {
+      "meta": "<COUNT>",
+      "desc": "set macro task count to be processed in each tick",
+      "default": 2
+    },
+    "loop-latency-limit-ms": {
+      "meta": "<MILLISECONDS>",
+      "desc": "abort the process if the event loop latency reached the limit",
+      "default": 0
+    }
+  },
+  "string": {
+    "agent-cred": {
+      "meta": "<CRED>",
+      "desc": "the agent credential"
+    },
+    "agent-type": {
+      "meta": "<TYPE>",
+      "desc": "the agent type (alice|test), default: alice",
+      "default": "alice"
+    },
+    "location": {
+      "meta": "<HREF>",
+      "desc": "value of 'globalThis.location' used by some web APIs"
+    },
+    "mode": {
+      "meta": "<RUN_MODE>",
+      "desc": "the run mode (normal|seed), default: normal",
+      "default": "normal"
+    },
+    "trace-event-categories": {
+      "meta": "<categories>",
+      "desc": "enables trace event output in the specified categories, implies --enable-trace-events",
+      "default": "",
+      "imply": "enable-trace-event"
+    },
+    "report-filename": {
+      "meta": "<REPORT_FILE>",
+      "desc": "filename of generating diagnostic report, also support 'stdout' or 'stderr'"
+    }
+  },
+  "file": {
+    "agent-ipc": {
+      "var": "agent_ipc_path",
+      "meta": "<UNIX_SOCK>",
+      "desc": "specify the path of IPC UNIX Domain Socket"
+    },
+    "preload-script": {
+      "meta": "<FILENAME>",
+      "desc": "pre-load a script file before the main file been evaluated"
+    },
+    "report-directory": {
+      "meta": "<REPORT_DIR>",
+      "desc": "directory of generating diagnostic reports"
+    },
+    "snapshot-blob": {
+      "meta": "<FILENAME>",
+      "desc": "external startup snapshot blob"
+    },
+    "trace-event-directory": {
+      "meta": "<REPORT_DIR>",
+      "desc": "directory of generating trace event logs"
+    },
+    "same-origin-shared-data-dir": {
+      "meta": "<SAME_ORIG_DIR>",
+      "desc": "directory of same origin shared data locates"
+    }
+  }
+}

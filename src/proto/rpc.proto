@@ -1,0 +1,70 @@
+syntax = "proto2";
+package aworker.ipc;
+option optimize_for = LITE_RUNTIME;
+
+enum CanonicalCode {
+  OK = 0;
+  INTERNAL_ERROR = 1;
+  TIMEOUT = 2;
+  NOT_IMPLEMENTED = 3;
+  CONNECTION_RESET = 4;
+  CLIENT_ERROR = 5;
+  CANCELLED = 6;
+}
+
+enum MessageKind {
+  Request = 1;
+  Response = 2;
+}
+
+/**
+ * Update alice_message.h to generate corresponding service interface.
+ */
+enum RequestKind {
+  Nil = 0;
+  // Worker Methods
+  Trigger = 1;
+  // Streams
+  StreamPush = 2;
+  StreamOpen = 3;
+  // Worker Metrics
+  CollectMetrics = 4;
+  // Agent Authentication
+  Credentials = 10;
+  // Agent Methods
+  Fetch = 11;
+  DaprInvoke = 12;
+  DaprBinding = 13;
+  FetchAbort = 14;
+  ExtensionBinding = 15;
+  // Resource Management - Worker Methods
+  ResourceNotification = 21;
+  // Resource Management - Agent Methods
+  ResourcePut = 22;
+
+  // Inspector - Worker Methods
+  InspectorStart = 100;
+  InspectorStartSession = 101;
+  InspectorEndSession = 102;
+  InspectorGetTargets = 103;
+  InspectorCommand = 104;
+  // Inspector - Agent Methods
+  InspectorEvent = 105;
+  InspectorStarted = 106;
+
+  // Tracing - Worker Methods
+  TracingStart = 110;
+  TracingStop = 111;
+}
+
+/**
+ * Update alice_socket.hh to set the correct MessageHeader byte size.
+ * TODO: compact size;
+ */
+message MessageHeader {
+  required fixed32 message_kind = 1;
+  required fixed32 request_id = 2;
+  required fixed32 request_kind = 3;
+  required fixed32 content_length = 5;
+  required fixed32 code = 6;
+}

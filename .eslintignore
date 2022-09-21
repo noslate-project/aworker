@@ -1,0 +1,4 @@
+deps
+docs
+test/node_parallel/fixtures/inline-source-maps.js
+test/node_parallel/fixtures/syntax-error.js

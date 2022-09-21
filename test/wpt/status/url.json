@@ -1,0 +1,9 @@
+{
+  "*.window.js": {
+    "fail": "No document object",
+    "skip": "No document object"
+  },
+  "url-setters-stripping.any.js": {
+    "fail": "Pick https://github.com/web-platform-tests/wpt/commit/2a64dae4641fbd61bd4257df460e188f425b492e"
+  }
+}

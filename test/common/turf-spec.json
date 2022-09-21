@@ -1,0 +1,42 @@
+{
+  "ociVersion": "1.0.0",
+  "process": {
+    "terminal": false,
+    "user": {
+      "uid": -2,
+      "gid": -2
+    },
+    "args": [],
+    "env": [
+      "PATH=/bin:/usr/bin",
+      "TERM=xterm"
+    ],
+    "noNewPrivileges": true
+  },
+  "root": {
+    "path": "rootfs",
+    "readonly": true
+  },
+  "linux": {
+    "resources": {
+      "memory": {
+        "limit": 536870912
+      }
+    },
+    "seccomp": {
+      "defaultAction": "SCMP_ACT_ALLOW",
+      "syscalls": [
+        {
+          "names": [
+            "chmod"
+          ],
+          "action": "SCMP_ACT_ERRNO"
+        }
+      ]
+    }
+  },
+  "turf": {
+    "runtime": "aworker",
+    "code": "code"
+  }
+}

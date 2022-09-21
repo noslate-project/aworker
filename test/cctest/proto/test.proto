@@ -1,0 +1,8 @@
+syntax = "proto2";
+package aworker.test;
+option optimize_for = LITE_RUNTIME;
+
+message TestFilePage {
+  required string foo = 1;
+  required string quz = 2;
+}

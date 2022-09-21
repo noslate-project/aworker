@@ -1,0 +1,60 @@
+syntax = "proto2";
+package aworker.cache;
+option optimize_for = LITE_RUNTIME;
+
+message KeyValuePair {
+  required string key = 1;
+  required string value = 2;
+}
+
+/**
+ * MARK: Pages
+ */
+message CachePageHeader {
+  required fixed32 aworker_magic = 1;
+  required fixed32 cache_data_version = 2;
+}
+
+/**
+ * MARK: Cache Storage Pages
+ */
+message CacheStoragePage {
+  repeated string caches = 1;
+}
+
+/**
+ * MARK: Cache Pages
+ */
+message CachedEntry {
+  required string url = 1;
+  required string req_method = 3;
+  repeated KeyValuePair req_headers = 4;
+  required string vary = 5;
+  required string cache_object_filename = 6;
+}
+
+message CachePage {
+  required string name = 1;
+  repeated CachedEntry entries = 2;
+}
+
+/**
+ * MARK: Cache Object Pages
+ */
+message CachedRequest {
+  required string url = 1;
+  required string method = 2;
+  repeated KeyValuePair headers = 3;
+}
+
+message CachedResponse {
+  required string url = 1;
+  required int32 status = 2;
+  repeated KeyValuePair headers = 3;
+  optional bytes body = 5;
+}
+
+message CacheObjectPage {
+  required CachedRequest request = 1;
+  required CachedResponse response = 2;
+}

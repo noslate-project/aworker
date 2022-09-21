@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "lib": ["es2020", "webworker"]
+  },
+  "include": [ "./typings/aworker/*.d.ts", "lib", "test", "tools" ],
+  "exclude": [ "test/node_parallel/fixtures/syntax-error.js" ]
+}

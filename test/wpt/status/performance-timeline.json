@@ -1,0 +1,12 @@
+{
+  "idlharness.any.js": {
+    "fail": "non idl compliant internal",
+    "skip": "non idl compliant internal"
+  },
+  "case-sensitivity.any.js": {
+    "fail": "entry type 'resource' not supported"
+  },
+  "webtiming-resolution.any.js": {
+    "skip": "the resolution of performance.now() is too high to be web compliant"
+  }
+}

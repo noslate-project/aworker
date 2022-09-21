@@ -1,0 +1,5 @@
+internal:*.js:*
+    throw new TypeError('*');
+    ^
+TypeError: *
+    at queueMicrotask (internal:*.js:*)

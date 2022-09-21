@@ -1,0 +1,9 @@
+{
+  "queue-microtask.window.js": {
+    "fail": "MutationObserver is not implemented",
+    "skip": "MutationObserver is not implemented"
+  },
+  "queue-microtask.any.js": {
+    "fail": "TODO: in place Promise.reject should not crash the process"
+  }
+}

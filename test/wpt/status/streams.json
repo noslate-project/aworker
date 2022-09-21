@@ -1,0 +1,74 @@
+{
+  "*.window.js": {
+    "fail": "No document object",
+    "skip": "No document object"
+  },
+  "idlharness.any.js": {
+    "fail": "non idl compliant internal",
+    "skip": "non idl compliant internal"
+  },
+  "piping/*.any.js": {
+    "fail": "not conforming",
+    "skip": "not conforming"
+  },
+  "transform-streams/*.any.js": {
+    "skip": "TransformStream not implemented"
+  },
+  "readable-byte-streams/bad-buffers-and-views.any.js": {
+    "skip": "ReadableStream with byte source: enqueuing a zero-length view on a non-zero-length buffer throws"
+  },
+  "readable-byte-streams/construct-byob-request.any.js": {
+    "skip": "BYOB not implemented"
+  },
+  "readable-byte-streams/general.any.js": {
+    "skip": "BYOB not implemented"
+  },
+  "readable-streams/async-iterator.any.js": {
+    "skip": "async iterator #values not implemented"
+  },
+  "readable-streams/bad-underlying-sources.any.js": {
+    "skip": "Underlying source: calling error and returning a rejected promise from start should cause the stream to error with the first error"
+  },
+  "readable-streams/count-queuing-strategy-integration.any.js": {
+    "skip": "CountQueuingStrategy not implemented"
+  },
+  "readable-streams/default-reader.any.js": {
+    "fail": "getReader with a mode ToString"
+  },
+  "readable-streams/general.any.js": {
+    "fail": "constructor should throw when the type is null"
+  },
+  "readable-streams/patched-global.any.js": {
+    "fail": "tee() should not call Promise.prototype.then()"
+  },
+  "readable-streams/tee.any.js": {
+    "fail": "ReadableStreamTee should not use a modified ReadableStream constructor from the global object"
+  },
+  "readable-streams/templated.any.js": {
+    "fail": "calling getReader with invalid arguments should throw appropriate errors"
+  },
+  "writable-streams/reentrant-strategy.any.js": {
+    "fail": "write() promise should reject with TypeError, but got string"
+  },
+  "writable-streams/bad-underlying-sinks.any.js": {
+    "fail": "close: throwing method should cause writer close() and ready to reject"
+  },
+  "writable-streams/close.any.js": {
+    "fail": "abort() after close()"
+  },
+  "writable-streams/aborting.any.js": {
+    "fail": "a released writer rejects should throw with TypeError, but got AssertionError"
+  },
+  "writable-streams/write.any.js": {
+    "fail": "writer ownership should throw with TypeError, but got AssertionError"
+  },
+  "writable-streams/count-queuing-strategy.any.js": {
+    "skip": "CountQueuingStrategy not implemented"
+  },
+  "writable-streams/byte-length-queuing-strategy.any.js": {
+    "skip": "CountQueuingStrategy not implemented"
+  },
+  "queuing-strategies.any.js": {
+    "fail": "CountQueuingStrategy is not implemented"
+  }
+}

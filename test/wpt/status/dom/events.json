@@ -1,0 +1,6 @@
+{
+  "*.window.js": {
+    "fail": "No document object",
+    "skip": "No document object"
+  }
+}
