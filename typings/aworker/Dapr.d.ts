@@ -36,8 +36,8 @@ declare namespace aworker {
     }
 
     interface DaprV1 {
-      public invoke(init?: ServiceRequest | ServiceRequestInit): Promise<ServiceResponse>;
-      public binding(init?: BindingRequest | BindingRequestInit): Promise<BindingResponse>;
+      invoke(init?: ServiceRequest | ServiceRequestInit): Promise<ServiceResponse>;
+      binding(init?: BindingRequest | BindingRequestInit): Promise<BindingResponse>;
     }
   }
 
