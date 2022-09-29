@@ -12,5 +12,3 @@
 /// <reference path="zlib.d.ts" />
 
 declare namespace aworker {}
-
-export {};

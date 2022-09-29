@@ -1,4 +1,4 @@
-namespace aworker {
+declare namespace aworker {
   interface BeaconOptions {
     format?: string;
   }

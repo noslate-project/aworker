@@ -1,0 +1,6 @@
+{
+  "compilerOptions": {
+    "lib": ["es2020", "webworker"]
+  },
+  "include": [ "../typings/aworker/*.d.ts"]
+}
