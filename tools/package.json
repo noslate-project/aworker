@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
-    "build:doc": "cd ../ && typedoc --showConfig --tsconfig ./tools/jsconfig.json --name Aworker --out ./docs ./typings/aworker/lib.aworker.d.ts"
+    "build:doc": "cd ../ && typedoc --tsconfig ./tools/jsconfig.json --name Aworker --out ./docs ./typings/aworker/lib.aworker.d.ts"
   },
   "devDependencies": {
     "typedoc": "^0.23.15"
