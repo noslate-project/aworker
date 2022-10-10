@@ -16,9 +16,9 @@ aworker aworker_g:
 	$(MAKE) -C ../build $@
 
 build:
-	$(MAKE) -C $(BUILD_PROJ_DIR) BUILDTYPE=$(BUILDTYPE) anc turf
-#	prepare alice native addons and alice/node_modules
-	$(MAKE) -C $(REPO_ROOT)/alice BUILDTYPE=$(BUILDTYPE) all node_modules
+	$(MAKE) -C $(BUILD_PROJ_DIR) BUILDTYPE=$(BUILDTYPE) noslate turf
+#	prepare noslated native addons and noslated/node_modules
+	$(MAKE) -C $(REPO_ROOT)/noslated BUILDTYPE=$(BUILDTYPE) all node_modules
 
 .PHONY: compile_commands.json
 compile_commands.json:
@@ -48,8 +48,8 @@ jstest: build $(TEST_FILES)
 ifeq ($(BUILDTYPE), Debug)
 jstest: export PATH:=$(BUILD_PROJ_DIR)/out/Debug:$(PATH)
 jstest: export NATIVE_DEBUG=1
-jstest: export ALICE_LOG_LEVEL=Debug
-jstest: export ALICE_SOCK_CONN_TIMEOUT=30000
+jstest: export NOSLATED_LOG_LEVEL=Debug
+jstest: export NOSLATED_SOCK_CONN_TIMEOUT=30000
 else
 jstest: export PATH:=$(BUILD_PROJ_DIR)/out/Release:$(PATH)
 endif

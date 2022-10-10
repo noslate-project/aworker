@@ -6,7 +6,7 @@
     'aworker_tag_v': '<!(git rev-parse --short=6 HEAD)',
     'mksnapshot_exec': '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)aworker_mksnapshot<(EXECUTABLE_SUFFIX)',
     'proto_files': [
-      'src/proto/alice.proto',
+      'src/proto/noslated.proto',
       'src/proto/rpc.proto',
       'src/proto/aworker_cache.proto',
     ],
@@ -14,7 +14,7 @@
       'src/proto/aworker_cache.proto',
     ],
     'proto_gen_files': [
-      '<(SHARED_INTERMEDIATE_DIR)/proto/alice.pb.cc',
+      '<(SHARED_INTERMEDIATE_DIR)/proto/noslated.pb.cc',
       '<(SHARED_INTERMEDIATE_DIR)/proto/rpc.pb.cc',
       '<(SHARED_INTERMEDIATE_DIR)/proto/aworker_cache.pb.cc',
     ],

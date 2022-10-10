@@ -119,7 +119,7 @@ class AliceClient : public AliceService {
 
 TEST(AliceServiceUvTest, Timeouts) {
   char server_path[PATH_MAX];
-  realpath("/tmp/.aliced.sock", server_path);
+  realpath("/tmp/.noslated.sock", server_path);
   AliceServer server;
   server.Start(server_path);
 
@@ -154,7 +154,7 @@ TEST(AliceServiceUvTest, Timeouts) {
 
 TEST(AliceServiceUvTest, ClientError) {
   char server_path[PATH_MAX];
-  realpath("/tmp/.aliced.sock", server_path);
+  realpath("/tmp/.noslated.sock", server_path);
   AliceServer server;
   server.Start(server_path);
 

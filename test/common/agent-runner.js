@@ -11,7 +11,7 @@ class AliceAworkerRunner extends AworkerRunner {
   constructor(path, opt = {}) {
     super(path, opt);
     // use os.tmpdir to prevent concatenating a pathname to be longer than 256 chars.
-    this.agentServerPath = opt.agentServerPath ?? fixtures.path('tmpdir', 'aliced.sock');
+    this.agentServerPath = opt.agentServerPath ?? fixtures.path('tmpdir', 'noslated.sock');
 
     this.execArgv = [
       '--has-agent',
@@ -30,10 +30,10 @@ class AliceAworkerRunner extends AworkerRunner {
 
   async startAliceAgent() {
     if (process.env.ALICE_LOG_LEVEL) {
-      const { loggers, getPrettySink } = require(path.join(fixtures.path('project', 'alice'), 'build/lib/loggers'));
+      const { loggers, getPrettySink } = require(path.join(fixtures.path('project', 'noslated'), 'build/lib/loggers'));
       loggers.setSink(getPrettySink());
     }
-    const { AliceDelegateService } = require(path.join(fixtures.path('project', 'alice'), 'build/delegate'));
+    const { AliceDelegateService } = require(path.join(fixtures.path('project', 'noslated'), 'build/delegate'));
     this.agent = new AliceDelegateService(this.agentServerPath);
     await this.agent.start();
     this.agent.register('foobar');
@@ -56,7 +56,7 @@ module.exports = {
 
 if (require.main === module) {
   const runner = new AliceAworkerRunner('alice', {
-    agentServerPath: path.join(process.cwd(), 'aliced.sock'),
+    agentServerPath: path.join(process.cwd(), 'noslated.sock'),
   });
   runner.startAliceAgent({ ref: true });
   console.log('started at', runner.agentServerPath);

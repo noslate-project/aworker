@@ -139,7 +139,7 @@ void StressTest(std::shared_ptr<uv::AliceClient> client, uint64_t* called) {
 
 TEST(StressTest, UvServerUvClient) {
   char server_path[PATH_MAX];
-  realpath("/tmp/.aliced.sock", server_path);
+  realpath("/tmp/.noslated.sock", server_path);
   AliceServer server;
   server.Start(server_path);
 
