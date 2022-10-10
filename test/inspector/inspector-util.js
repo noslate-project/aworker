@@ -14,7 +14,7 @@ async function run(scriptPath, breakOnEntry = true) {
       [
         fixtures.path('tools', 'shell.js'),
         '--bin', fixtures.path('product', 'aworker'),
-        '--agent-server-path', fixtures.path('tmpdir', 'aliced.sock'),
+        '--agent-server-path', fixtures.path('tmpdir', 'noslated.sock'),
         breakOnEntry ? '--inspect-brk' : '--inspect',
         scriptPath,
       ],

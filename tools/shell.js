@@ -145,7 +145,7 @@ async function main(argv) {
     return process.exit(1);
   }
   let agentModulePath = resolveAlice();
-  let agentServerPath = path.join(process.cwd(), 'aliced.sock');
+  let agentServerPath = path.join(process.cwd(), 'noslated.sock');
   let daprAdaptorPath;
   let aworkerExecutablePath = 'aworker';
   let startInspectorServer = false;
@@ -207,7 +207,7 @@ function resolveAlice() {
   try {
     if (fs.statSync(pkgJsonPath).isFile()) {
       const pkg = require(pkgJsonPath);
-      if (pkg.name !== 'alice') {
+      if (pkg.name !== 'noslated') {
         throw '';
       }
       return path.resolve(__dirname, '..');
@@ -222,12 +222,12 @@ function resolveAlice() {
   ].join(':');
   require('module').Module._initPaths();
   try {
-    return require.resolve('alice', {
+    return require.resolve('noslated', {
       paths: [
       ],
     });
   } catch {
-    return 'alice';
+    return 'noslated';
   }
 }
 
