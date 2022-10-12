@@ -54,11 +54,6 @@ using v8::Value;
 namespace aworker {
 namespace per_process {
 bool external_snapshot_loaded = false;
-
-// Tells whether the per-process V8::Initialize() is called and
-// if it is safe to call v8::Isolate::GetCurrent().
-bool v8_initialized = false;
-
 }  // namespace per_process
 
 /**
@@ -112,9 +107,6 @@ char** InitializeOncePerProcess(int* argc, char** argv) {
    */
   V8::SetFlagsFromString(v8_flags());
 
-  V8::Initialize();
-  per_process::v8_initialized = true;
-
   if (help_count) {
     argv[*argc] = help_ptr;
     (*argc)++;
@@ -124,11 +116,6 @@ char** InitializeOncePerProcess(int* argc, char** argv) {
 }
 
 bool TearDownOncePerProcess() {
-  if (per_process::v8_initialized) {
-    V8::Dispose();
-    per_process::v8_initialized = false;
-  }
-
   return true;
 }
 
@@ -137,13 +124,8 @@ void AworkerMainInstance::DisposeIsolate(v8::Isolate* isolate) {
 }
 
 AworkerMainInstance::AworkerMainInstance(
-    std::unique_ptr<CommandlineParserGroup> cli)
-    : cli_(std::move(cli)) {
-  uv_loop_init(&loop_);
-  platform_ = AworkerPlatform::Create(&loop_);
-  array_buffer_allocator_ = std::shared_ptr<v8::ArrayBuffer::Allocator>(
-      v8::ArrayBuffer::Allocator::NewDefaultAllocator());
-  V8::InitializePlatform(platform_.get());
+    AworkerPlatform* platform, std::unique_ptr<CommandlineParserGroup> cli)
+    : cli_(std::move(cli)), platform_(platform), loop_(platform->loop()) {
   isolate_owner_ = IsolatePtr(v8::Isolate::Allocate());
   isolate_ = isolate_owner_.get();
   isolate_->Enter();
@@ -162,12 +144,6 @@ AworkerMainInstance::~AworkerMainInstance() {
   isolate_data_owner_.reset();
   isolate_owner_.reset();
   cli_.reset();
-  array_buffer_allocator_.reset();
-
-  V8::ShutdownPlatform();
-  platform_.reset();
-
-  CheckedUvLoopClose(&loop_);
 }
 
 v8::StartupData* AworkerMainInstance::GetSnapshotBlob() {
@@ -237,7 +213,7 @@ void AworkerMainInstance::WarmFork() {
             "testing environment.\n");
   }
 
-  uv_loop_fork(&loop_);
+  uv_loop_fork(loop_);
   per_process::DebugPrintCurrentTime("uv after fork");
 
   // Pass argv to V8 and left argv filtered to commandline parser
@@ -276,14 +252,14 @@ void AworkerMainInstance::Initialize(IsolateCreationMode mode) {
 
   if (mode == IsolateCreationMode::kNormal) {
     v8::Isolate::CreateParams params;
-    params.array_buffer_allocator_shared = array_buffer_allocator_;
+    params.array_buffer_allocator_shared = platform_->array_buffer_allocator();
     params.snapshot_blob = GetSnapshotBlob();
     params.external_references =
         per_process::external_reference_registry.external_references().data();
     v8::Isolate::Initialize(isolate_, params);
   } else if (mode == IsolateCreationMode::kTesting) {
     v8::Isolate::CreateParams params;
-    params.array_buffer_allocator_shared = array_buffer_allocator_;
+    params.array_buffer_allocator_shared = platform_->array_buffer_allocator();
     params.external_references =
         per_process::external_reference_registry.external_references().data();
     v8::Isolate::Initialize(isolate_, params);
@@ -303,7 +279,7 @@ void AworkerMainInstance::Initialize(IsolateCreationMode mode) {
     NativeModuleManager::Instance().InitializeCachedData(*native_module_caches);
   }
   immortal_owner_ = std::make_unique<Immortal>(
-      &loop_,
+      loop_,
       cli_.get(),
       isolate_,
       isolate_data_,
@@ -323,8 +299,8 @@ void AworkerMainInstance::WarmForkWithUserScript() {
   {
     // Disallow handles been created without local HandleScopes.
     SealHandleScope scope(isolate);
-    while (uv_loop_alive(&loop_)) {
-      uv_run(&loop_, UV_RUN_ONCE);
+    while (uv_loop_alive(loop_)) {
+      uv_run(loop_, UV_RUN_ONCE);
       if (immortal_->worker_state() == WorkerState::kForkPrepared) {
         break;
       }
@@ -372,7 +348,7 @@ int AworkerMainInstance::Start() {
   {
     // Disallow handles been created without local HandleScopes.
     SealHandleScope scope(isolate);
-    uv_run(&loop_, UV_RUN_DEFAULT);
+    uv_run(loop_, UV_RUN_DEFAULT);
   }
 
   if (cli_->mixin_inspect()) {
@@ -392,7 +368,7 @@ int AworkerMainInstance::BuildSnapshot() {
   CHECK(cli_->has_snapshot_blob());
   aworker::SnapshotBuilder builder;
   aworker::SnapshotData data;
-  builder.Generate(&data, this);
+  builder.Generate(&data, platform_, this);
   data.WriteToFile(cli_->snapshot_blob());
   return 0;
 }

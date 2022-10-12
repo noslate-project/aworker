@@ -14,6 +14,7 @@ using v8::Isolate;
 using v8::Local;
 using v8::MaybeLocal;
 using v8::Module;
+using v8::ModuleRequest;
 using v8::Object;
 using v8::Promise;
 using v8::ScriptCompiler;
@@ -60,9 +61,11 @@ void ModuleWrap::HostInitializeImportMetaObjectCallback(Local<Context> context,
       .ToLocalChecked();
 }
 
-MaybeLocal<Module> ModuleWrap::ResolveCallback(Local<Context> context,
-                                               Local<String> specifier,
-                                               Local<Module> referrer) {
+MaybeLocal<Module> ModuleWrap::ResolveCallback(
+    Local<Context> context,
+    Local<String> specifier,
+    Local<FixedArray> import_assertions,
+    Local<Module> referrer) {
   Immortal* immortal = Immortal::GetCurrent(context);
   Isolate* isolate = immortal->isolate();
   ModuleWrap* wrap = ModuleWrap::GetFromModule(immortal, referrer);
@@ -120,16 +123,16 @@ AWORKER_METHOD(ModuleWrap::New) {
   Local<Integer> line_offset = info[2].As<Integer>();
   Local<Integer> column_offset = info[3].As<Integer>();
 
-  // TODO(chengzhong.wcz): safe Local;
-  ScriptOrigin origin(filename,
-                      line_offset,         // line offset
-                      column_offset,       // column offset
-                      v8::False(isolate),  // is cross origin
-                      Local<Integer>(),    // script id
-                      Local<Value>(),      // source map URL
-                      v8::False(isolate),  // is opaque (?)
-                      v8::False(isolate),  // is wasm
-                      v8::True(isolate));  // is module
+  ScriptOrigin origin(isolate,
+                      filename,
+                      line_offset->Value(),    // line offset
+                      column_offset->Value(),  // column offset
+                      false,                   // is cross origin
+                      -1,                      // script id
+                      Local<Value>(),          // source map URL
+                      false,                   // is opaque (?)
+                      false,                   // is wasm
+                      true);                   // is module
 
   ScriptCompiler::CompileOptions compile_options =
       ScriptCompiler::kNoCompileOptions;
@@ -160,10 +163,12 @@ AWORKER_METHOD(ModuleWrap::Link) {
 
   Local<Function> resolver = info[0].As<Function>();
 
-  int module_requests_length = mod->GetModuleRequestsLength();
-  std::vector<Local<Value>> promises(module_requests_length);
-  for (int idx = 0; idx < module_requests_length; idx++) {
-    Local<String> specifier = mod->GetModuleRequest(idx);
+  Local<FixedArray> module_requests = mod->GetModuleRequests();
+  std::vector<Local<Value>> promises(module_requests->Length());
+  for (int idx = 0; idx < module_requests->Length(); idx++) {
+    Local<ModuleRequest> module_request =
+        module_requests->Get(context, idx).As<ModuleRequest>();
+    Local<String> specifier = module_request->GetSpecifier();
     String::Utf8Value specifier_utf8(isolate, specifier);
     std::string specifier_std = *specifier_utf8;
 

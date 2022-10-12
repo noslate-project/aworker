@@ -1,18 +1,27 @@
-#include "aworker.h"
-#include "gtest/gtest.h"
+#include "test_env.h"
 
-class AworkerEnvironment : public ::testing::Environment {
- public:
-  ~AworkerEnvironment() override {}
+AworkerEnvironment::~AworkerEnvironment() {}
 
-  void SetUp() override {
-    int argc = 1;
-    char* argv[] = {"aworker"};
-    aworker::InitializeOncePerProcess(&argc, argv);
-  }
+void AworkerEnvironment::SetUp() {
+  int argc = 1;
+  char* argv[] = {"aworker"};
+  aworker::InitializeOncePerProcess(&argc, argv);
+  platform_ = std::make_unique<aworker::AworkerPlatform>();
+  v8::V8::InitializePlatform(platform_.get());
+  v8::V8::Initialize();
+}
 
-  void TearDown() override { aworker::TearDownOncePerProcess(); }
-};
+void AworkerEnvironment::TearDown() {
+  v8::V8::Dispose();
+  v8::V8::DisposePlatform();
+  platform_.reset();
+  aworker::TearDownOncePerProcess();
+}
 
-testing::Environment* const foo_env =
-    testing::AddGlobalTestEnvironment(new AworkerEnvironment);
+AworkerEnvironment* AworkerEnvironment::env() {
+  static AworkerEnvironment* self = new AworkerEnvironment();
+  return self;
+}
+
+testing::Environment* const testing_env =
+    testing::AddGlobalTestEnvironment(AworkerEnvironment::env());

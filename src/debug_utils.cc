@@ -458,9 +458,10 @@ void CheckedUvLoopClose(uv_loop_t* loop) {
 
   PrintUvHandleInformation(loop, stderr);
 
+  fprintf(stderr, "uv_loop_close() with open handles");
   fflush(stderr);
-  // Finally, abort.
-  CHECK(0 && "uv_loop_close() while having open handles");
+  // Finally, hard abort without dump.
+  abort();
 }
 
 void PrintUvHandleInformation(uv_loop_t* loop, FILE* stream) {

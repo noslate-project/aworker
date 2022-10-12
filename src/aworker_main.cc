@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "aworker.h"
+#include "aworker_platform.h"
 #include "aworker_version.h"
 
 int main(int argc, char** argv) {
@@ -25,14 +26,20 @@ int main(int argc, char** argv) {
 
   int exit_code = 0;
   {
-    bool build_snapshot = cli->build_snapshot();
-    aworker::AworkerMainInstance instance(std::move(cli));
-    if (build_snapshot) {
-      exit_code = instance.BuildSnapshot();
-    } else {
-      instance.Initialize();
-      exit_code = instance.Start();
+    aworker::AworkerPlatform platform;
+    aworker::AworkerPlatform::Scope use_platform(&platform);
+    v8::V8::Initialize();
+    {
+      bool build_snapshot = cli->build_snapshot();
+      aworker::AworkerMainInstance instance(&platform, std::move(cli));
+      if (build_snapshot) {
+        exit_code = instance.BuildSnapshot();
+      } else {
+        instance.Initialize();
+        exit_code = instance.Start();
+      }
     }
+    v8::V8::Dispose();
   }
 
   aworker::TearDownOncePerProcess();

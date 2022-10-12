@@ -34,7 +34,8 @@ class AworkerMainInstance {
  public:
   static const int kMainContextIndex = 0;
 
-  explicit AworkerMainInstance(std::unique_ptr<CommandlineParserGroup> cli);
+  explicit AworkerMainInstance(AworkerPlatform* platform,
+                               std::unique_ptr<CommandlineParserGroup> cli);
   ~AworkerMainInstance();
 
   /**
@@ -88,12 +89,6 @@ class AworkerMainInstance {
     return std::move(isolate_data_owner_);
   }
 
-  inline std::shared_ptr<v8::ArrayBuffer::Allocator> array_buffer_allocator() {
-    return array_buffer_allocator_;
-  }
-
-  inline AworkerPlatform* platform() { return platform_.get(); }
-
  private:
   v8::StartupData* GetSnapshotBlob();
   const std::vector<size_t>* GetIsolateDataIndexes();
@@ -105,9 +100,8 @@ class AworkerMainInstance {
 
   // Note: Order matters
   std::unique_ptr<CommandlineParserGroup> cli_;
-  uv_loop_t loop_;
-  AworkerPlatform::AworkerPlatformPtr platform_;
-  std::shared_ptr<v8::ArrayBuffer::Allocator> array_buffer_allocator_;
+  AworkerPlatform* platform_;
+  uv_loop_t* loop_;
   std::unique_ptr<SnapshotData> snapshot_data_;
 
   IsolatePtr isolate_owner_;

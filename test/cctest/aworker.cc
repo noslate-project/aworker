@@ -6,6 +6,7 @@
 
 #include "aworker_binding.h"
 #include "immortal.h"
+#include "test_env.h"
 
 namespace aworker {
 
@@ -67,6 +68,7 @@ void CheckBootstrapModules(Immortal* immortal,
 TEST(Aworker, InitializeAndBootstrap) {
   char* argv[] = {"aworker"};  // NOLINT
   aworker::AworkerMainInstance instance(
+      AworkerEnvironment::env()->platform(),
       std::make_unique<aworker::CommandlineParserGroup>(arraysize(argv), argv));
   instance.Initialize(IsolateCreationMode::kTesting);
 
@@ -155,6 +157,7 @@ TEST(Aworker, InitializeAndBootstrap) {
 TEST(Aworker, InitializeAndBootstrapWithSnapshot) {
   char* argv[] = {"aworker"};  // NOLINT
   aworker::AworkerMainInstance instance(
+      AworkerEnvironment::env()->platform(),
       std::make_unique<aworker::CommandlineParserGroup>(arraysize(argv), argv));
   instance.Initialize();
 

@@ -63,10 +63,13 @@ struct SnapshotData {
 };
 
 class AworkerMainInstance;
+class AworkerPlatform;
 class SnapshotBuilder {
  public:
   void Generate(SnapshotData* out, int argc, char** argv);
-  void Generate(SnapshotData* out, AworkerMainInstance* main_instance);
+  void Generate(SnapshotData* out,
+                AworkerPlatform* platform,
+                AworkerMainInstance* main_instance);
 };
 }  // namespace aworker
 
