@@ -360,9 +360,9 @@ void AliceDataChannel::CollectMetrics(
 #define V(name)                                                                \
   {                                                                            \
     auto record = res->add_integer_records();                                  \
-    record->set_name("noslate.worker." #name);                                \
+    record->set_name("noslate.worker." #name);                                 \
     auto label = record->add_labels();                                         \
-    label->set_key("noslate.worker.pid");                                     \
+    label->set_key("noslate.worker.pid");                                      \
     /* TODO(chengzhong.wcz): real pid when pid namespace isolated */           \
     label->set_value(std::to_string(getpid()));                                \
     record->set_value(statistics.name());                                      \

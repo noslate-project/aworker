@@ -6,7 +6,7 @@
 #define SRC_IPC_IPC_PB_H_
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-#include "proto/alice.pb.h"
+#include "proto/noslated.pb.h"
 #include "proto/rpc.pb.h"
 #pragma GCC diagnostic pop
 
