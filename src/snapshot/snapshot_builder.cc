@@ -308,6 +308,7 @@ void ResetIsolateHandlers(v8::Isolate* isolate) {
 }
 
 void SnapshotBuilder::Generate(SnapshotData* out,
+                               AworkerPlatform* platform,
                                AworkerMainInstance* main_instance) {
   // Transfer ownership to SnapshotCreator later...
   Isolate* isolate = main_instance->ReleaseIsolate();
@@ -359,7 +360,7 @@ void SnapshotBuilder::Generate(SnapshotData* out,
       isolate->RequestGarbageCollectionForTesting(
           Isolate::GarbageCollectionType::kFullGarbageCollection);
       v8::V8::SetFlagsFromString("--no-expose-gc");
-      main_instance->platform()->task_runner()->DrainTasks();
+      platform->task_runner()->DrainTasks();
       {
         // Disallow handles been created without local HandleScopes.
         v8::SealHandleScope scope(isolate);
@@ -396,9 +397,17 @@ void SnapshotBuilder::Generate(SnapshotData* out,
 }
 
 void SnapshotBuilder::Generate(SnapshotData* out, int argc, char** argv) {
-  AworkerMainInstance main_instance(
-      std::make_unique<CommandlineParserGroup>(argc, argv));
+  aworker::AworkerPlatform platform;
+  v8::V8::InitializePlatform(&platform);
+  v8::V8::Initialize();
 
-  return Generate(out, &main_instance);
+  {
+    AworkerMainInstance main_instance(
+        &platform, std::make_unique<CommandlineParserGroup>(argc, argv));
+    Generate(out, &platform, &main_instance);
+  }
+
+  v8::V8::Dispose();
+  v8::V8::DisposePlatform();
 }
 }  // namespace aworker

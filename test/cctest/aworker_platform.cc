@@ -44,228 +44,200 @@ class TestDelayedTask : public v8::Task {
 };
 
 TEST(AworkerPlatformForegroundTaskRunner, PostTask) {
-  uv_loop_t loop;
-  ASSERT_EQ(uv_loop_init(&loop), 0);
+  AworkerPlatform platform;
+  uv_loop_t* loop = platform.loop();
 
-  {
-    // uv_run will not spin the loop if there is no ref-ed handles/reqs.
-    uv_idle_t idle;
-    ASSERT_EQ(uv_idle_init(&loop, &idle), 0);
-    ASSERT_EQ(uv_idle_start(&idle, [](uv_idle_t* handle) {}), 0);
+  // uv_run will not spin the loop if there is no ref-ed handles/reqs.
+  uv_idle_t idle;
+  ASSERT_EQ(uv_idle_init(loop, &idle), 0);
+  ASSERT_EQ(uv_idle_start(&idle, [](uv_idle_t* handle) {}), 0);
 
-    AworkerPlatform::AworkerPlatformPtr platform =
-        AworkerPlatform::Create(&loop);
+  int count = 0;
+  bool done = false;
+  auto runner = platform.GetForegroundTaskRunner(nullptr);
+  runner->PostTask(std::make_unique<TestTask>(&count, &done, runner.get()));
 
-    int count = 0;
-    bool done = false;
-    auto runner = platform->GetForegroundTaskRunner(nullptr);
-    runner->PostTask(std::make_unique<TestTask>(&count, &done, runner.get()));
+  usleep(_100ms);
+  uv_run(loop, UV_RUN_NOWAIT);
+  EXPECT_EQ(count, 1);
 
-    usleep(_100ms);
-    uv_run(&loop, UV_RUN_NOWAIT);
-    EXPECT_EQ(count, 1);
+  // disable re-post task.
+  done = true;
+  // task runner re-scheduled timer has to be at least 1ms later.
+  usleep(_100ms);
+  uv_run(loop, UV_RUN_NOWAIT);
+  EXPECT_EQ(count, 2);
 
-    // disable re-post task.
-    done = true;
-    // task runner re-scheduled timer has to be at least 1ms later.
-    usleep(_100ms);
-    uv_run(&loop, UV_RUN_NOWAIT);
-    EXPECT_EQ(count, 2);
+  // no tasks should be posted for now.
+  usleep(_100ms);
+  uv_run(loop, UV_RUN_NOWAIT);
+  EXPECT_EQ(count, 2);
 
-    // no tasks should be posted for now.
-    usleep(_100ms);
-    uv_run(&loop, UV_RUN_NOWAIT);
-    EXPECT_EQ(count, 2);
+  // post a new task after the runner has been drained.
+  runner->PostTask(std::make_unique<TestTask>(&count, &done, runner.get()));
 
-    // post a new task after the runner has been drained.
-    runner->PostTask(std::make_unique<TestTask>(&count, &done, runner.get()));
+  usleep(_100ms);
+  uv_run(loop, UV_RUN_NOWAIT);
+  EXPECT_EQ(count, 3);
 
-    usleep(_100ms);
-    uv_run(&loop, UV_RUN_NOWAIT);
-    EXPECT_EQ(count, 3);
-
-    // close the ref-ed handle so that the disposure of aworker platform will
-    // not loop forever
-    uv_close(reinterpret_cast<uv_handle_t*>(&idle), nullptr);
-  }
-
-  assert_uv_loop_close(&loop);
+  // close the ref-ed handle so that the disposure of aworker platform will
+  // not loop forever
+  uv_close(reinterpret_cast<uv_handle_t*>(&idle), nullptr);
 }
 
 TEST(AworkerPlatformForegroundTaskRunner, PostDelayedTask) {
-  uv_loop_t loop;
-  ASSERT_EQ(uv_loop_init(&loop), 0);
+  AworkerPlatform platform;
+  uv_loop_t* loop = platform.loop();
 
-  {
-    // uv_run will not spin the loop if there is no ref-ed handles/reqs.
-    uv_idle_t idle;
-    ASSERT_EQ(uv_idle_init(&loop, &idle), 0);
-    ASSERT_EQ(uv_idle_start(&idle, [](uv_idle_t* handle) {}), 0);
+  // uv_run will not spin the loop if there is no ref-ed handles/reqs.
+  uv_idle_t idle;
+  ASSERT_EQ(uv_idle_init(loop, &idle), 0);
+  ASSERT_EQ(uv_idle_start(&idle, [](uv_idle_t* handle) {}), 0);
 
-    AworkerPlatform::AworkerPlatformPtr platform =
-        AworkerPlatform::Create(&loop);
+  int count = 0;
+  bool done = false;
+  auto runner = platform.GetForegroundTaskRunner(nullptr);
+  runner->PostDelayedTask(
+      std::make_unique<TestDelayedTask>(&count, &done, runner.get()),
+      0.01 /* 10ms */);
 
-    int count = 0;
-    bool done = false;
-    auto runner = platform->GetForegroundTaskRunner(nullptr);
-    runner->PostDelayedTask(
-        std::make_unique<TestDelayedTask>(&count, &done, runner.get()),
-        0.01 /* 10ms */);
+  usleep(_100ms);
+  uv_run(loop, UV_RUN_NOWAIT);
+  EXPECT_EQ(count, 1);
 
-    usleep(_100ms);
-    uv_run(&loop, UV_RUN_NOWAIT);
-    EXPECT_EQ(count, 1);
+  // disable re-post task.
+  done = true;
+  // task runner re-scheduled timer has to be at least 1ms later.
+  usleep(_100ms);
+  uv_run(loop, UV_RUN_NOWAIT);
+  EXPECT_EQ(count, 2);
 
-    // disable re-post task.
-    done = true;
-    // task runner re-scheduled timer has to be at least 1ms later.
-    usleep(_100ms);
-    uv_run(&loop, UV_RUN_NOWAIT);
-    EXPECT_EQ(count, 2);
+  // no tasks should be posted for now.
+  usleep(_100ms);
+  uv_run(loop, UV_RUN_NOWAIT);
+  EXPECT_EQ(count, 2);
 
-    // no tasks should be posted for now.
-    usleep(_100ms);
-    uv_run(&loop, UV_RUN_NOWAIT);
-    EXPECT_EQ(count, 2);
+  // post a new task after the runner has been drained.
+  runner->PostDelayedTask(
+      std::make_unique<TestDelayedTask>(&count, &done, runner.get()),
+      0.01 /* 10ms */);
+  usleep(_100ms);
+  uv_run(loop, UV_RUN_NOWAIT);
+  EXPECT_EQ(count, 3);
 
-    // post a new task after the runner has been drained.
-    runner->PostDelayedTask(
-        std::make_unique<TestDelayedTask>(&count, &done, runner.get()),
-        0.01 /* 10ms */);
-    usleep(_100ms);
-    uv_run(&loop, UV_RUN_NOWAIT);
-    EXPECT_EQ(count, 3);
-
-    // close the ref-ed handle so that the disposure of aworker platform will
-    // not loop forever
-    uv_close(reinterpret_cast<uv_handle_t*>(&idle), nullptr);
-  }
-
-  assert_uv_loop_close(&loop);
+  // close the ref-ed handle so that the disposure of aworker platform will
+  // not loop forever
+  uv_close(reinterpret_cast<uv_handle_t*>(&idle), nullptr);
 }
 
 TEST(AworkerPlatformForegroundTaskRunner, Interwined) {
-  uv_loop_t loop;
-  ASSERT_EQ(uv_loop_init(&loop), 0);
+  AworkerPlatform platform;
+  uv_loop_t* loop = platform.loop();
 
-  {
-    // uv_run will not spin the loop if there is no ref-ed handles/reqs.
-    uv_idle_t idle;
-    ASSERT_EQ(uv_idle_init(&loop, &idle), 0);
-    ASSERT_EQ(uv_idle_start(&idle, [](uv_idle_t* handle) {}), 0);
+  // uv_run will not spin the loop if there is no ref-ed handles/reqs.
+  uv_idle_t idle;
+  ASSERT_EQ(uv_idle_init(loop, &idle), 0);
+  ASSERT_EQ(uv_idle_start(&idle, [](uv_idle_t* handle) {}), 0);
 
-    AworkerPlatform::AworkerPlatformPtr platform =
-        AworkerPlatform::Create(&loop);
+  int count = 0;
+  bool done = false;
+  auto runner = platform.GetForegroundTaskRunner(nullptr);
+  runner->PostDelayedTask(
+      std::make_unique<TestDelayedTask>(&count, &done, runner.get()),
+      1 /* 1000ms */);
+  runner->PostTask(std::make_unique<TestTask>(&count, &done, runner.get()));
+  // Timeline:
+  // |- 100ms
+  // |- immediate task
+  // |- 1s
+  // |- immediate task
+  // |- delayed task
+  // |- 100ms
+  // |- immediate task
+  // |- delayed task
+  // |
+  // |- immediate task
 
-    int count = 0;
-    bool done = false;
-    auto runner = platform->GetForegroundTaskRunner(nullptr);
-    runner->PostDelayedTask(
-        std::make_unique<TestDelayedTask>(&count, &done, runner.get()),
-        1 /* 1000ms */);
-    runner->PostTask(std::make_unique<TestTask>(&count, &done, runner.get()));
-    // Timeline:
-    // |- 100ms
-    // |- immediate task
-    // |- 1s
-    // |- immediate task
-    // |- delayed task
-    // |- 100ms
-    // |- immediate task
-    // |- delayed task
-    // |
-    // |- immediate task
+  usleep(_100ms);
+  uv_run(loop, UV_RUN_NOWAIT);
+  EXPECT_EQ(count, 1);
 
-    usleep(_100ms);
-    uv_run(&loop, UV_RUN_NOWAIT);
-    EXPECT_EQ(count, 1);
+  // task runner re-scheduled timer has to be at least 1ms later.
+  sleep(1);
+  uv_run(loop, UV_RUN_NOWAIT);
+  // both delayed task and immediate task were executed.
+  EXPECT_EQ(count, 3);
 
-    // task runner re-scheduled timer has to be at least 1ms later.
-    sleep(1);
-    uv_run(&loop, UV_RUN_NOWAIT);
-    // both delayed task and immediate task were executed.
-    EXPECT_EQ(count, 3);
+  done = true;
+  // task runner re-scheduled timer has to be at least 1ms later.
+  usleep(_100ms);
+  uv_run(loop, UV_RUN_NOWAIT);
+  // both delayed task and immediate task were executed.
+  EXPECT_EQ(count, 5);
 
-    done = true;
-    // task runner re-scheduled timer has to be at least 1ms later.
-    usleep(_100ms);
-    uv_run(&loop, UV_RUN_NOWAIT);
-    // both delayed task and immediate task were executed.
-    EXPECT_EQ(count, 5);
+  // no tasks should be posted for now.
+  usleep(_100ms);
+  uv_run(loop, UV_RUN_NOWAIT);
+  EXPECT_EQ(count, 5);
 
-    // no tasks should be posted for now.
-    usleep(_100ms);
-    uv_run(&loop, UV_RUN_NOWAIT);
-    EXPECT_EQ(count, 5);
+  // post a new task after the runner has been drained.
+  runner->PostDelayedTask(
+      std::make_unique<TestDelayedTask>(&count, &done, runner.get()),
+      0.01 /* 10ms */);
+  usleep(_100ms);
+  uv_run(loop, UV_RUN_NOWAIT);
+  EXPECT_EQ(count, 6);
 
-    // post a new task after the runner has been drained.
-    runner->PostDelayedTask(
-        std::make_unique<TestDelayedTask>(&count, &done, runner.get()),
-        0.01 /* 10ms */);
-    usleep(_100ms);
-    uv_run(&loop, UV_RUN_NOWAIT);
-    EXPECT_EQ(count, 6);
-
-    // close the ref-ed handle so that the disposure of aworker platform will
-    // not loop forever
-    uv_close(reinterpret_cast<uv_handle_t*>(&idle), nullptr);
-  }
-
-  assert_uv_loop_close(&loop);
+  // close the ref-ed handle so that the disposure of aworker platform will
+  // not loop forever
+  uv_close(reinterpret_cast<uv_handle_t*>(&idle), nullptr);
 }
 
 TEST(AworkerPlatformForegroundTaskRunner, InterwinedDuringReschedule) {
-  uv_loop_t loop;
-  ASSERT_EQ(uv_loop_init(&loop), 0);
+  AworkerPlatform platform;
+  uv_loop_t* loop = platform.loop();
 
-  {
-    // uv_run will not spin the loop if there is no ref-ed handles/reqs.
-    uv_idle_t idle;
-    ASSERT_EQ(uv_idle_init(&loop, &idle), 0);
-    ASSERT_EQ(uv_idle_start(&idle, [](uv_idle_t* handle) {}), 0);
+  // uv_run will not spin the loop if there is no ref-ed handles/reqs.
+  uv_idle_t idle;
+  ASSERT_EQ(uv_idle_init(loop, &idle), 0);
+  ASSERT_EQ(uv_idle_start(&idle, [](uv_idle_t* handle) {}), 0);
 
-    AworkerPlatform::AworkerPlatformPtr platform =
-        AworkerPlatform::Create(&loop);
+  int count = 0;
+  bool done = false;
+  auto runner = platform.GetForegroundTaskRunner(nullptr);
+  runner->PostDelayedTask(
+      std::make_unique<TestDelayedTask>(&count, &done, runner.get()),
+      0.1 /* 100ms */);
+  // Timeline:
+  // |- 100ms
+  // |- delayed task
+  // |- 100ms
+  // |- immediate task
+  // |- delayed task
+  // |
+  // |- immediate task
 
-    int count = 0;
-    bool done = false;
-    auto runner = platform->GetForegroundTaskRunner(nullptr);
-    runner->PostDelayedTask(
-        std::make_unique<TestDelayedTask>(&count, &done, runner.get()),
-        0.1 /* 100ms */);
-    // Timeline:
-    // |- 100ms
-    // |- delayed task
-    // |- 100ms
-    // |- immediate task
-    // |- delayed task
-    // |
-    // |- immediate task
+  sleep(1);
+  uv_run(loop, UV_RUN_NOWAIT);
+  // both delayed task and immediate task were executed.
+  EXPECT_EQ(count, 1);
 
-    sleep(1);
-    uv_run(&loop, UV_RUN_NOWAIT);
-    // both delayed task and immediate task were executed.
-    EXPECT_EQ(count, 1);
+  runner->PostTask(std::make_unique<TestTask>(&count, &done, runner.get()));
 
-    runner->PostTask(std::make_unique<TestTask>(&count, &done, runner.get()));
+  done = true;
+  // task runner re-scheduled timer has to be at least 1ms later.
+  usleep(_100ms);
+  uv_run(loop, UV_RUN_NOWAIT);
+  // both delayed task and immediate task were executed.
+  EXPECT_EQ(count, 3);
 
-    done = true;
-    // task runner re-scheduled timer has to be at least 1ms later.
-    usleep(_100ms);
-    uv_run(&loop, UV_RUN_NOWAIT);
-    // both delayed task and immediate task were executed.
-    EXPECT_EQ(count, 3);
+  // no tasks should be posted for now.
+  usleep(_100ms);
+  uv_run(loop, UV_RUN_NOWAIT);
+  EXPECT_EQ(count, 3);
 
-    // no tasks should be posted for now.
-    usleep(_100ms);
-    uv_run(&loop, UV_RUN_NOWAIT);
-    EXPECT_EQ(count, 3);
-
-    // close the ref-ed handle so that the disposure of aworker platform will
-    // not loop forever
-    uv_close(reinterpret_cast<uv_handle_t*>(&idle), nullptr);
-  }
-
-  assert_uv_loop_close(&loop);
+  // close the ref-ed handle so that the disposure of aworker platform will
+  // not loop forever
+  uv_close(reinterpret_cast<uv_handle_t*>(&idle), nullptr);
 }
 }  // namespace aworker

@@ -170,31 +170,30 @@ void PlatformTaskRunner::PostNonNestableDelayedTask(unique_ptr<v8::Task> task,
   PostDelayedTask(move(task), delay);
 }
 
-AworkerPlatform::AworkerPlatformPtr AworkerPlatform::Create(uv_loop_t* loop) {
-  return AworkerPlatformPtr(new AworkerPlatform(loop));
-}
-
-void AworkerPlatform::Dispose(AworkerPlatform* platform) {
-  platform->trace_agent_->Stop();
-  platform->task_runner_.reset();
-  while (uv_loop_alive(platform->loop_) != 0) {
-    uv_run(platform->loop_, UV_RUN_DEFAULT);
-  }
-  delete platform;
-}
-
-AworkerPlatform::AworkerPlatform(uv_loop_t* loop)
-    : loop_(loop),
-      task_runner_(std::make_unique<aworker::PlatformTaskRunner>(loop)) {
-  trace_agent_ = std::make_unique<TraceAgent>(loop);
-  aworker::tracing::TraceEventHelper::SetTraceAgent(trace_agent_.get());
+AworkerPlatform::AworkerPlatform() {
+  CHECK_EQ(uv_loop_init(&loop_), 0);
+  task_runner_ = std::make_unique<aworker::PlatformTaskRunner>(&loop_);
+  trace_agent_ = std::make_unique<TraceAgent>(&loop_);
   aworker::TracingController* controller = trace_agent_->GetTracingController();
   trace_state_observer_ =
       std::make_unique<AworkerTraceStateObserver>(controller);
   controller->AddTraceStateObserver(trace_state_observer_.get());
+
+  array_buffer_allocator_ = std::shared_ptr<v8::ArrayBuffer::Allocator>(
+      v8::ArrayBuffer::Allocator::NewDefaultAllocator());
 }
 
-AworkerPlatform::~AworkerPlatform() {}
+AworkerPlatform::~AworkerPlatform() {
+  trace_agent_->Stop();
+  // wait until trace agent flushed
+  while (uv_loop_alive(&loop_) != 0) {
+    uv_run(&loop_, UV_RUN_DEFAULT);
+  }
+
+  task_runner_.reset();
+  trace_agent_.reset();
+  CheckedUvLoopClose(&loop_);
+}
 
 void AworkerPlatform::CallOnWorkerThread(unique_ptr<v8::Task> task) {
   task_runner_->PostTask(std::move(task));
@@ -252,6 +251,16 @@ void AworkerPlatform::EvaluateCommandlineOptions(CommandlineParserGroup* cli) {
   if (cli->enable_trace_event() && cli->has_trace_event_categories()) {
     trace_agent_->Enable(cli->trace_event_categories());
   }
+}
+
+AworkerPlatform::Scope::Scope(AworkerPlatform* platform) : platform_(platform) {
+  v8::V8::InitializePlatform(platform);
+  aworker::tracing::TraceEventHelper::SetTraceAgent(platform->trace_agent());
+}
+
+AworkerPlatform::Scope::~Scope() {
+  aworker::tracing::TraceEventHelper::SetTraceAgent(nullptr);
+  v8::V8::DisposePlatform();
 }
 
 }  // namespace aworker

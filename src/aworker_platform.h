@@ -101,10 +101,20 @@ class PlatformTaskRunner : public v8::TaskRunner {
 
 class AworkerPlatform : public v8::Platform {
  public:
-  static void Dispose(AworkerPlatform*);
-  using AworkerPlatformPtr = DeleteFnPtr<AworkerPlatform, Dispose>;
-  static AworkerPlatformPtr Create(uv_loop_t* loop);
-  virtual ~AworkerPlatform();
+  AworkerPlatform();
+  AworkerPlatform(const AworkerPlatform&) = delete;
+  ~AworkerPlatform() noexcept override;
+
+  class Scope {
+   public:
+    explicit Scope(AworkerPlatform* platform);
+    ~Scope();
+
+    Scope(const Scope&) = delete;
+
+   private:
+    AworkerPlatform* platform_;
+  };
 
   void CallOnWorkerThread(std::unique_ptr<v8::Task> task) override;
   void CallDelayedOnWorkerThread(std::unique_ptr<v8::Task> task,
@@ -132,15 +142,19 @@ class AworkerPlatform : public v8::Platform {
 
   inline PlatformTaskRunner* task_runner() { return task_runner_.get(); }
 
- private:
-  explicit AworkerPlatform(uv_loop_t* loop);
+  inline uv_loop_t* loop() { return &loop_; }
+
+  inline std::shared_ptr<v8::ArrayBuffer::Allocator> array_buffer_allocator() {
+    return array_buffer_allocator_;
+  }
 
  private:
-  uv_loop_t* loop_;
+  uv_loop_t loop_;
   std::unique_ptr<TraceAgent> trace_agent_;
   std::unique_ptr<v8::TracingController::TraceStateObserver>
       trace_state_observer_;
   std::shared_ptr<PlatformTaskRunner> task_runner_;
+  std::shared_ptr<v8::ArrayBuffer::Allocator> array_buffer_allocator_;
 };
 
 }  // namespace aworker

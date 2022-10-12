@@ -9,7 +9,11 @@ v8::TracingController* g_controller = nullptr;
 
 void TraceEventHelper::SetTraceAgent(TraceAgent* agent) {
   g_agent = agent;
-  g_controller = agent->GetTracingController();
+  if (agent) {
+    g_controller = agent->GetTracingController();
+  } else {
+    g_controller = nullptr;
+  }
 }
 
 TraceAgent* TraceEventHelper::GetTraceAgent() {

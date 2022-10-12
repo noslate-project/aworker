@@ -154,7 +154,7 @@ MaybeLocal<Function> NativeModuleManager::Compile(
     std::string id,
     vector<Local<String>> parameters,
     NativeModuleResult* result) {
-  auto isolate = context->GetIsolate();
+  Isolate* isolate = context->GetIsolate();
 
   EscapableHandleScope scope(isolate);
 
@@ -162,8 +162,7 @@ MaybeLocal<Function> NativeModuleManager::Compile(
   Local<String> v8_filename = OneByteString(isolate, filename.c_str());
   Local<String> source = GetModuleSource(isolate, id);
 
-  Local<Integer> offset = Integer::New(isolate, 0);
-  ScriptOrigin origin(v8_filename, offset, offset, True(isolate));
+  ScriptOrigin origin(isolate, v8_filename, 0, 0, true);
 
   ScriptCompiler::CachedData* cached_data = nullptr;
   auto cache_it = cached_data_map_.find(id);
