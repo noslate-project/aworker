@@ -91,8 +91,8 @@ class AliceAworkerShell {
       const { loggers, getPrettySink } = require(path.join(this._agentModulePath, 'build/lib/loggers'));
       loggers.setSink(getPrettySink());
     }
-    const { AliceDelegateService } = require(path.join(this._agentModulePath, 'build/delegate'));
-    this.agent = new AliceDelegateService(this.agentServerPath);
+    const { NoslatedDelegateService } = require(path.join(this._agentModulePath, 'build/delegate'));
+    this.agent = new NoslatedDelegateService(this.agentServerPath);
     await this.agent.start();
     if (this.daprAdaptorPath) {
       const daprAdaptor = require(this.daprAdaptorPath);

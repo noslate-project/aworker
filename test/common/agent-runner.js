@@ -33,8 +33,8 @@ class AliceAworkerRunner extends AworkerRunner {
       const { loggers, getPrettySink } = require(path.join(fixtures.path('project', 'noslated'), 'build/lib/loggers'));
       loggers.setSink(getPrettySink());
     }
-    const { AliceDelegateService } = require(path.join(fixtures.path('project', 'noslated'), 'build/delegate'));
-    this.agent = new AliceDelegateService(this.agentServerPath);
+    const { NoslatedDelegateService } = require(path.join(fixtures.path('project', 'noslated'), 'build/delegate'));
+    this.agent = new NoslatedDelegateService(this.agentServerPath);
     await this.agent.start();
     this.agent.register('foobar');
     this.agent.on('disconnect', cred => {
