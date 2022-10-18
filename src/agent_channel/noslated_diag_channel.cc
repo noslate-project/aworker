@@ -12,8 +12,8 @@ namespace agent {
 using std::unique_ptr;
 
 NoslatedDiagChannel::NoslatedDiagChannel(Immortal* immortal,
-                                   std::string server_path,
-                                   std::string credential)
+                                         std::string server_path,
+                                         std::string credential)
     : AgentDiagChannel(immortal->watchdog(), credential),
       NoslatedService(),
       immortal_(immortal),

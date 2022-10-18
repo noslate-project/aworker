@@ -17,14 +17,14 @@ using std::unique_ptr;
 class NoslatedDataChannel : public AgentDataChannel, public NoslatedService {
  public:
   NoslatedDataChannel(Immortal* immortal,
-                   std::string server_path,
-                   std::string credential,
-                   bool refed);
+                      std::string server_path,
+                      std::string credential,
+                      bool refed);
   virtual ~NoslatedDataChannel();
 
-  template <
-      void (NoslatedDataChannel::*func)(std::unique_ptr<RpcController> controller,
-                                     const v8::Local<v8::Object> params)>
+  template <void (NoslatedDataChannel::*func)(
+      std::unique_ptr<RpcController> controller,
+      const v8::Local<v8::Object> params)>
   static AWORKER_METHOD(JsCall);
   void Callback(const uint32_t id,
                 const v8::Local<v8::Value> exception,

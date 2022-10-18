@@ -16,8 +16,8 @@ using namespace ::aworker::ipc;  // NOLINT(build/namespaces)
 class NoslatedDiagChannel : public AgentDiagChannel, public NoslatedService {
  public:
   explicit NoslatedDiagChannel(Immortal* immortal,
-                            std::string server_path,
-                            std::string credential);
+                               std::string server_path,
+                               std::string credential);
   ~NoslatedDiagChannel();
 
   void Start(uv_loop_t* loop) override;

@@ -73,7 +73,8 @@ class NoslatedClient : public NoslatedService {
  public:
   class ClientDelegate : public DelegateImpl {
    public:
-    ClientDelegate(shared_ptr<NoslatedClient> client, shared_ptr<EventLoop> loop)
+    ClientDelegate(shared_ptr<NoslatedClient> client,
+                   shared_ptr<EventLoop> loop)
         : DelegateImpl(client, loop), client_(client) {}
     std::shared_ptr<SocketHolder> socket() override {
       if (client_->socket_ == nullptr) {

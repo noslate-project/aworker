@@ -33,8 +33,8 @@ class SocketSession {
 class NoslatedSocketServer {
  public:
   NoslatedSocketServer(std::shared_ptr<uv_loop_t> loop,
-                    std::string server_pipe_name,
-                    std::shared_ptr<NoslatedService> service)
+                       std::string server_pipe_name,
+                       std::shared_ptr<NoslatedService> service)
       : service_(service),
         loop_(std::move(loop)),
         server_pipe_name_(server_pipe_name) {}

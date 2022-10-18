@@ -637,9 +637,9 @@ void Immortal::StartAgentChannel() {
 
   std::shared_ptr<AgentDataChannel> data_channel =
       std::make_shared<agent::NoslatedDataChannel>(this,
-                                                parser->agent_ipc_path(),
-                                                parser->agent_cred(),
-                                                parser->ref_agent());
+                                                   parser->agent_ipc_path(),
+                                                   parser->agent_cred(),
+                                                   parser->ref_agent());
   std::shared_ptr<AgentDiagChannel> diag_channel =
       std::make_shared<agent::NoslatedDiagChannel>(
           this, parser->agent_ipc_path(), parser->agent_cred());

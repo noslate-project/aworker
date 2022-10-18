@@ -17,9 +17,11 @@ using std::move;
 using std::shared_ptr;
 using std::unique_ptr;
 
-void NoslatedSocketServer::NoslatedSocketServerCloseCallback(uv_handle_t* handle) {
+void NoslatedSocketServer::NoslatedSocketServerCloseCallback(
+    uv_handle_t* handle) {
   uv_pipe_t* it = reinterpret_cast<uv_pipe_t*>(handle);
-  NoslatedSocketServer* server = ContainerOf(&NoslatedSocketServer::server_pipe_, it);
+  NoslatedSocketServer* server =
+      ContainerOf(&NoslatedSocketServer::server_pipe_, it);
   server->service_->Closed();
   delete server;
 }
@@ -100,7 +102,7 @@ void NoslatedSocketServer::Accept() {
 
 void NoslatedSocketServer::ListenCallback(uv_stream_t* server, int status) {
   NoslatedSocketServer* ami = ContainerOf(&NoslatedSocketServer::server_pipe_,
-                                       reinterpret_cast<uv_pipe_t*>(server));
+                                          reinterpret_cast<uv_pipe_t*>(server));
   CHECK_EQ(0, status);
   ami->Accept();
 }

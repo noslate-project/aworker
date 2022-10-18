@@ -34,9 +34,9 @@ using v8::Uint8Array;
 using v8::Value;
 
 NoslatedDataChannel::NoslatedDataChannel(Immortal* immortal,
-                                   std::string server_path,
-                                   std::string credential,
-                                   bool refed)
+                                         std::string server_path,
+                                         std::string credential,
+                                         bool refed)
     : AgentDataChannel(immortal, credential, refed),
       NoslatedService(),
       loop_(immortal_->event_loop()) {
@@ -57,8 +57,8 @@ NoslatedDataChannel::~NoslatedDataChannel() {
 }
 
 void NoslatedDataChannel::Callback(const uint32_t id,
-                                const Local<Value> exception,
-                                const Local<Value> params) {
+                                   const Local<Value> exception,
+                                   const Local<Value> params) {
   per_process::Debug(DebugCategory::AGENT_CHANNEL, "unref %zu\n", ref_count_);
   ref_count_--;
   if (ref_count_ == 0 && socket_ != nullptr) {
@@ -80,8 +80,8 @@ void NoslatedDataChannel::Callback(const uint32_t id,
 }
 
 void NoslatedDataChannel::Emit(const uint32_t id,
-                            const std::string& event,
-                            const Local<Value> params) {
+                               const std::string& event,
+                               const Local<Value> params) {
   per_process::Debug(DebugCategory::AGENT_CHANNEL, "ref %zu\n", ref_count_);
   if (ref_count_ == 0) {
     socket_->Ref();
@@ -105,8 +105,8 @@ void NoslatedDataChannel::Emit(const uint32_t id,
 }
 
 bool NoslatedDataChannel::Feedback(const uint32_t id,
-                                const int32_t code,
-                                const Local<Object> params) {
+                                   const int32_t code,
+                                   const Local<Object> params) {
   per_process::Debug(
       DebugCategory::AGENT_CHANNEL, "feedback %u %d\n", id, code);
   CHECK(CanonicalCode_IsValid(code));
@@ -143,9 +143,9 @@ void NoslatedDataChannel::Unref() {
 }
 
 void NoslatedDataChannel::Trigger(unique_ptr<RpcController> controller,
-                               unique_ptr<TriggerRequestMessage> req,
-                               unique_ptr<TriggerResponseMessage> res,
-                               Closure<TriggerResponseMessage> closure) {
+                                  unique_ptr<TriggerRequestMessage> req,
+                                  unique_ptr<TriggerResponseMessage> res,
+                                  Closure<TriggerResponseMessage> closure) {
   per_process::Debug(DebugCategory::AGENT_CHANNEL,
                      "on trigger(%d)\n",
                      controller->request_id());
@@ -278,10 +278,11 @@ void NoslatedDataChannel::Trigger(unique_ptr<RpcController> controller,
   Emit(controller->request_id(), "trigger", params);
 }
 
-void NoslatedDataChannel::StreamPush(unique_ptr<RpcController> controller,
-                                  unique_ptr<StreamPushRequestMessage> req,
-                                  unique_ptr<StreamPushResponseMessage> res,
-                                  Closure<StreamPushResponseMessage> closure) {
+void NoslatedDataChannel::StreamPush(
+    unique_ptr<RpcController> controller,
+    unique_ptr<StreamPushRequestMessage> req,
+    unique_ptr<StreamPushResponseMessage> res,
+    Closure<StreamPushResponseMessage> closure) {
   per_process::Debug(DebugCategory::AGENT_CHANNEL,
                      "on stream push(%d)\n",
                      controller->request_id());
@@ -410,7 +411,7 @@ void NoslatedDataChannel::ResourceNotification(
 }
 
 void NoslatedDataChannel::CallFetch(unique_ptr<RpcController> controller,
-                                 const Local<Object> params) {
+                                    const Local<Object> params) {
   Isolate* isolate = immortal_->isolate();
   HandleScope scope(isolate);
   Local<Context> context = immortal_->context();
@@ -504,7 +505,7 @@ void NoslatedDataChannel::CallFetch(unique_ptr<RpcController> controller,
 }
 
 void NoslatedDataChannel::CallFetchAbort(unique_ptr<RpcController> controller,
-                                      const Local<Object> params) {
+                                         const Local<Object> params) {
   Isolate* isolate = immortal_->isolate();
   HandleScope scope(isolate);
   Local<Context> context = immortal_->context();
@@ -539,7 +540,7 @@ void NoslatedDataChannel::CallFetchAbort(unique_ptr<RpcController> controller,
 }
 
 void NoslatedDataChannel::CallStreamOpen(unique_ptr<RpcController> controller,
-                                      const Local<Object> params) {
+                                         const Local<Object> params) {
   auto req = make_unique<StreamOpenRequestMessage>();
 
   auto req_id = controller->request_id();
@@ -570,7 +571,7 @@ void NoslatedDataChannel::CallStreamOpen(unique_ptr<RpcController> controller,
 }
 
 void NoslatedDataChannel::CallStreamPush(unique_ptr<RpcController> controller,
-                                      const Local<Object> params) {
+                                         const Local<Object> params) {
   Isolate* isolate = immortal_->isolate();
   HandleScope scope(isolate);
   Local<Context> context = immortal_->context();
@@ -626,7 +627,7 @@ void NoslatedDataChannel::CallStreamPush(unique_ptr<RpcController> controller,
 }
 
 void NoslatedDataChannel::CallDaprInvoke(unique_ptr<RpcController> controller,
-                                      const Local<Object> params) {
+                                         const Local<Object> params) {
   Isolate* isolate = immortal_->isolate();
   HandleScope scope(isolate);
   Local<Context> context = immortal_->context();
@@ -702,7 +703,7 @@ void NoslatedDataChannel::CallDaprInvoke(unique_ptr<RpcController> controller,
 }
 
 void NoslatedDataChannel::CallDaprBinding(unique_ptr<RpcController> controller,
-                                       const Local<Object> params) {
+                                          const Local<Object> params) {
   Isolate* isolate = immortal_->isolate();
   HandleScope scope(isolate);
   Local<Context> context = immortal_->context();
@@ -866,7 +867,7 @@ void NoslatedDataChannel::CallExtensionBinding(
 }
 
 void NoslatedDataChannel::CallResourcePut(unique_ptr<RpcController> controller,
-                                       const v8::Local<v8::Object> params) {
+                                          const v8::Local<v8::Object> params) {
   Isolate* isolate = immortal_->isolate();
   HandleScope scope(isolate);
   Local<Context> context = immortal_->context();
@@ -1031,7 +1032,7 @@ AWORKER_METHOD(SetHandler) {
 
 template <
     void (NoslatedDataChannel::*func)(std::unique_ptr<RpcController> controller,
-                                   const v8::Local<v8::Object> params)>
+                                      const v8::Local<v8::Object> params)>
 AWORKER_METHOD(NoslatedDataChannel::JsCall) {
   Immortal* immortal = Immortal::GetCurrent(info);
 
@@ -1128,7 +1129,7 @@ AWORKER_METHOD(Unref) {
   immortal->agent_data_channel()->Unref();
 }
 
-#define NOSLATED_DATA_CHANNEL_METHODS(V)                                          \
+#define NOSLATED_DATA_CHANNEL_METHODS(V)                                       \
   V(CallFetch, fetch)                                                          \
   V(CallFetchAbort, fetchAbort)                                                \
   V(CallStreamOpen, streamOpen)                                                \
@@ -1141,7 +1142,9 @@ AWORKER_METHOD(Unref) {
 AWORKER_BINDING(Init) {
 #define V(method, name)                                                        \
   immortal->SetFunctionProperty(                                               \
-      exports, #name, NoslatedDataChannel::JsCall<&NoslatedDataChannel::method>);
+      exports,                                                                 \
+      #name,                                                                   \
+      NoslatedDataChannel::JsCall<&NoslatedDataChannel::method>);
   NOSLATED_DATA_CHANNEL_METHODS(V)
 #undef V
 

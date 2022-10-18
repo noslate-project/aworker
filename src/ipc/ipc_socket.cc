@@ -63,7 +63,8 @@ DecodingState NoslatedDecoder::Decode() {
     read_size_ = MessageHeaderSize;
   }
   if (buffer_.size() < (MessageHeaderSize + header_->content_length())) {
-    DLOG("NoslatedDecoder::Decode buffer size less than content: %zu, wanted: %zu",
+    DLOG("NoslatedDecoder::Decode buffer size less than content: %zu, wanted: "
+         "%zu",
          buffer_.size(),
          (MessageHeaderSize + header_->content_length()));
     return DecodingState::DecodingStateMore;

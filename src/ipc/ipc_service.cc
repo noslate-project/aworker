@@ -7,9 +7,9 @@ using std::move;
 using std::unique_ptr;
 
 #define V(TYPE)                                                                \
-  void NoslatedService::Request(unique_ptr<RpcController> controller,             \
-                             unique_ptr<TYPE##RequestMessage> req,             \
-                             Closure<TYPE##ResponseMessage> closure) {         \
+  void NoslatedService::Request(unique_ptr<RpcController> controller,          \
+                                unique_ptr<TYPE##RequestMessage> req,          \
+                                Closure<TYPE##ResponseMessage> closure) {      \
     Request_(move(controller),                                                 \
              RequestKind::TYPE,                                                \
              move(req),                                                        \
@@ -25,9 +25,9 @@ NOSLATED_REQUEST_TYPES(V)
 #undef V
 
 void NoslatedService::Request_(unique_ptr<RpcController> controller,
-                            RequestKind kind,
-                            unique_ptr<Message> req,
-                            Closure<Message> closure) {
+                               RequestKind kind,
+                               unique_ptr<Message> req,
+                               Closure<Message> closure) {
   if (auto it = socket_delegate(controller->session_id()).lock()) {
     it->Request(controller->request_id(),
                 kind,
