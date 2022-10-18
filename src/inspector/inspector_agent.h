@@ -75,7 +75,7 @@ class InspectorAgent {
   Immortal* immortal_;
   // Encapsulates majority of the Inspector functionality
   std::shared_ptr<AworkerInspectorClient> client_;
-  // Interface for transports, e.g. Alice server
+  // Interface for transports, e.g. Noslated server
   std::unique_ptr<InspectorIo> io_;
   std::string script_name_;
 };

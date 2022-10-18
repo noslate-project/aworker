@@ -15,10 +15,10 @@ enum class DecodingState {
   DecodingStateMore = 1,
 };
 
-class AliceDecoder {
+class NoslatedDecoder {
  public:
   static void Init();
-  AliceDecoder();
+  NoslatedDecoder();
   void InsertBuffer(const char* base, size_t len);
   DecodingState Decode();
   inline Message* TakeContentOwnership();
@@ -73,7 +73,7 @@ class SocketHolder {
   void Dispatch();
   void SetReadable();
   void OnReadable();
-  AliceDecoder decoder_;
+  NoslatedDecoder decoder_;
   std::shared_ptr<SocketDelegate> delegate_;
   std::shared_ptr<EventLoop> loop_;
   Immediate* read_immediate_ = nullptr;

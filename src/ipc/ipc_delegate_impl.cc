@@ -62,7 +62,7 @@ void DelegateImpl::OnRequest(RequestId id,
   }
 
   switch (kind) {
-    ALICE_REQUEST_TYPES(V)
+    NOSLATED_REQUEST_TYPES(V)
     default: {
       ELOG("unreconigzable request kind: %d", kind);
       DCHECK(false);

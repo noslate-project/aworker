@@ -30,11 +30,11 @@ class SocketSession {
   UvSocketHolder::Pointer socket_ = nullptr;
 };
 
-class AliceSocketServer {
+class NoslatedSocketServer {
  public:
-  AliceSocketServer(std::shared_ptr<uv_loop_t> loop,
+  NoslatedSocketServer(std::shared_ptr<uv_loop_t> loop,
                     std::string server_pipe_name,
-                    std::shared_ptr<AliceService> service)
+                    std::shared_ptr<NoslatedService> service)
       : service_(service),
         loop_(std::move(loop)),
         server_pipe_name_(server_pipe_name) {}
@@ -62,11 +62,11 @@ class AliceSocketServer {
   inline uv_loop_t* loop() { return loop_.get(); }
 
  private:
-  ~AliceSocketServer() = default;
-  static void AliceSocketServerCloseCallback(uv_handle_t* handle);
+  ~NoslatedSocketServer() = default;
+  static void NoslatedSocketServerCloseCallback(uv_handle_t* handle);
   static void ListenCallback(uv_stream_t* server, int status);
 
-  std::shared_ptr<AliceService> service_;
+  std::shared_ptr<NoslatedService> service_;
   std::shared_ptr<uv_loop_t> loop_;
   std::string server_pipe_name_;
   uv_pipe_t server_pipe_;
@@ -77,8 +77,8 @@ class AliceSocketServer {
 
 class ServerDelegate : public DelegateImpl {
  public:
-  ServerDelegate(AliceSocketServer* server,
-                 std::shared_ptr<AliceService> service,
+  ServerDelegate(NoslatedSocketServer* server,
+                 std::shared_ptr<NoslatedService> service,
                  SessionId session_id)
       : DelegateImpl(service, std::make_shared<UvLoop>(server->loop())),
         session_id_(session_id),
@@ -103,7 +103,7 @@ class ServerDelegate : public DelegateImpl {
   }
 
   SessionId session_id_;
-  AliceSocketServer* server_;
+  NoslatedSocketServer* server_;
 };
 
 }  // namespace server

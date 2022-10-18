@@ -3,13 +3,13 @@
 #include "ipc/ipc_pb.h"
 
 // TODO(chengzhong.wcz): connect timeout by args?
-#define ALICE_CONNECT_TIMEOUT_MS 5000
-#define ALICE_STREAM_PUSH_TIMEOUT_MS 30000
-#define ALICE_RESOURCE_NOTIFICATION_TIMEOUT_MS 2000
-#define ALICE_COLLECT_METRICS_TIMEOUT_MS 2000
-#define ALICE_INSPECTOR_TIMEOUT_MS 60000
+#define NOSLATED_CONNECT_TIMEOUT_MS 5000
+#define NOSLATED_STREAM_PUSH_TIMEOUT_MS 30000
+#define NOSLATED_RESOURCE_NOTIFICATION_TIMEOUT_MS 2000
+#define NOSLATED_COLLECT_METRICS_TIMEOUT_MS 2000
+#define NOSLATED_INSPECTOR_TIMEOUT_MS 60000
 
-#define ALICE_REQUEST_TYPES(V)                                                 \
+#define NOSLATED_REQUEST_TYPES(V)                                                 \
   V(Credentials)                                                               \
   V(StreamOpen)                                                                \
   V(StreamPush)                                                                \
@@ -32,7 +32,7 @@
   V(TracingStart)                                                              \
   V(TracingStop)
 
-#define ALICE_CANONICAL_CODE_KEYS(V)                                           \
+#define NOSLATED_CANONICAL_CODE_KEYS(V)                                           \
   V(OK)                                                                        \
   V(INTERNAL_ERROR)                                                            \
   V(TIMEOUT)                                                                   \
@@ -41,11 +41,11 @@
   V(CLIENT_ERROR)                                                              \
   V(CANCELLED)
 
-#define ALICE_CREDENTIAL_TARGET_TYPE_KEYS(V)                                   \
+#define NOSLATED_CREDENTIAL_TARGET_TYPE_KEYS(V)                                   \
   V(Data)                                                                      \
   V(Diagnostics)
 
-#define ALICE_RESOURCE_PUT_ACTION_KEYS(V)                                      \
+#define NOSLATED_RESOURCE_PUT_ACTION_KEYS(V)                                      \
   V(ACQUIRE_SH)                                                                \
   V(ACQUIRE_EX)                                                                \
   V(RELEASE)

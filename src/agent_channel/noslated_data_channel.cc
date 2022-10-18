@@ -1,4 +1,4 @@
-#include "agent_channel/alice_data_channel.h"
+#include "agent_channel/noslated_data_channel.h"
 #include <unistd.h>
 #include <string>
 #include "aworker_logger.h"
@@ -33,12 +33,12 @@ using v8::TryCatch;
 using v8::Uint8Array;
 using v8::Value;
 
-AliceDataChannel::AliceDataChannel(Immortal* immortal,
+NoslatedDataChannel::NoslatedDataChannel(Immortal* immortal,
                                    std::string server_path,
                                    std::string credential,
                                    bool refed)
     : AgentDataChannel(immortal, credential, refed),
-      AliceService(),
+      NoslatedService(),
       loop_(immortal_->event_loop()) {
   auto loop_handle = std::make_shared<UvLoop>(loop_);
   delegate_ = std::make_shared<ClientDelegate>(unowned_ptr(this), loop_handle);
@@ -46,17 +46,17 @@ AliceDataChannel::AliceDataChannel(Immortal* immortal,
       loop_handle,
       server_path,
       delegate_,
-      std::bind(&AliceDataChannel::OnConnect, this, std::placeholders::_1));
+      std::bind(&NoslatedDataChannel::OnConnect, this, std::placeholders::_1));
 }
 
-AliceDataChannel::~AliceDataChannel() {
+NoslatedDataChannel::~NoslatedDataChannel() {
   socket_.reset();
   while (uv_loop_alive(loop_) != 0 && !closed_) {
     uv_run(loop_, UV_RUN_ONCE);
   }
 }
 
-void AliceDataChannel::Callback(const uint32_t id,
+void NoslatedDataChannel::Callback(const uint32_t id,
                                 const Local<Value> exception,
                                 const Local<Value> params) {
   per_process::Debug(DebugCategory::AGENT_CHANNEL, "unref %zu\n", ref_count_);
@@ -79,7 +79,7 @@ void AliceDataChannel::Callback(const uint32_t id,
   task_queue::TickTaskQueue(immortal_);
 }
 
-void AliceDataChannel::Emit(const uint32_t id,
+void NoslatedDataChannel::Emit(const uint32_t id,
                             const std::string& event,
                             const Local<Value> params) {
   per_process::Debug(DebugCategory::AGENT_CHANNEL, "ref %zu\n", ref_count_);
@@ -104,7 +104,7 @@ void AliceDataChannel::Emit(const uint32_t id,
   task_queue::TickTaskQueue(immortal_);
 }
 
-bool AliceDataChannel::Feedback(const uint32_t id,
+bool NoslatedDataChannel::Feedback(const uint32_t id,
                                 const int32_t code,
                                 const Local<Object> params) {
   per_process::Debug(
@@ -126,7 +126,7 @@ bool AliceDataChannel::Feedback(const uint32_t id,
   return true;
 }
 
-void AliceDataChannel::Ref() {
+void NoslatedDataChannel::Ref() {
   per_process::Debug(DebugCategory::AGENT_CHANNEL, "ref %zu\n", ref_count_);
   if (ref_count_ == 0) {
     socket_->Ref();
@@ -134,7 +134,7 @@ void AliceDataChannel::Ref() {
   ref_count_++;
 }
 
-void AliceDataChannel::Unref() {
+void NoslatedDataChannel::Unref() {
   per_process::Debug(DebugCategory::AGENT_CHANNEL, "unref %zu\n", ref_count_);
   ref_count_--;
   if (ref_count_ == 0) {
@@ -142,7 +142,7 @@ void AliceDataChannel::Unref() {
   }
 }
 
-void AliceDataChannel::Trigger(unique_ptr<RpcController> controller,
+void NoslatedDataChannel::Trigger(unique_ptr<RpcController> controller,
                                unique_ptr<TriggerRequestMessage> req,
                                unique_ptr<TriggerResponseMessage> res,
                                Closure<TriggerResponseMessage> closure) {
@@ -278,7 +278,7 @@ void AliceDataChannel::Trigger(unique_ptr<RpcController> controller,
   Emit(controller->request_id(), "trigger", params);
 }
 
-void AliceDataChannel::StreamPush(unique_ptr<RpcController> controller,
+void NoslatedDataChannel::StreamPush(unique_ptr<RpcController> controller,
                                   unique_ptr<StreamPushRequestMessage> req,
                                   unique_ptr<StreamPushResponseMessage> res,
                                   Closure<StreamPushResponseMessage> closure) {
@@ -334,7 +334,7 @@ void AliceDataChannel::StreamPush(unique_ptr<RpcController> controller,
   Emit(controller->request_id(), "streamPush", params);
 }
 
-void AliceDataChannel::CollectMetrics(
+void NoslatedDataChannel::CollectMetrics(
     unique_ptr<RpcController> controller,
     unique_ptr<CollectMetricsRequestMessage> req,
     unique_ptr<CollectMetricsResponseMessage> res,
@@ -375,7 +375,7 @@ void AliceDataChannel::CollectMetrics(
   closure(CanonicalCode::OK, nullptr, move(res));
 }
 
-void AliceDataChannel::ResourceNotification(
+void NoslatedDataChannel::ResourceNotification(
     unique_ptr<RpcController> controller,
     unique_ptr<ResourceNotificationRequestMessage> req,
     unique_ptr<ResourceNotificationResponseMessage> response,
@@ -409,7 +409,7 @@ void AliceDataChannel::ResourceNotification(
   Emit(controller->request_id(), "resourceNotification", params);
 }
 
-void AliceDataChannel::CallFetch(unique_ptr<RpcController> controller,
+void NoslatedDataChannel::CallFetch(unique_ptr<RpcController> controller,
                                  const Local<Object> params) {
   Isolate* isolate = immortal_->isolate();
   HandleScope scope(isolate);
@@ -503,7 +503,7 @@ void AliceDataChannel::CallFetch(unique_ptr<RpcController> controller,
       });
 }
 
-void AliceDataChannel::CallFetchAbort(unique_ptr<RpcController> controller,
+void NoslatedDataChannel::CallFetchAbort(unique_ptr<RpcController> controller,
                                       const Local<Object> params) {
   Isolate* isolate = immortal_->isolate();
   HandleScope scope(isolate);
@@ -538,7 +538,7 @@ void AliceDataChannel::CallFetchAbort(unique_ptr<RpcController> controller,
           });
 }
 
-void AliceDataChannel::CallStreamOpen(unique_ptr<RpcController> controller,
+void NoslatedDataChannel::CallStreamOpen(unique_ptr<RpcController> controller,
                                       const Local<Object> params) {
   auto req = make_unique<StreamOpenRequestMessage>();
 
@@ -569,7 +569,7 @@ void AliceDataChannel::CallStreamOpen(unique_ptr<RpcController> controller,
           });
 }
 
-void AliceDataChannel::CallStreamPush(unique_ptr<RpcController> controller,
+void NoslatedDataChannel::CallStreamPush(unique_ptr<RpcController> controller,
                                       const Local<Object> params) {
   Isolate* isolate = immortal_->isolate();
   HandleScope scope(isolate);
@@ -625,7 +625,7 @@ void AliceDataChannel::CallStreamPush(unique_ptr<RpcController> controller,
           });
 }
 
-void AliceDataChannel::CallDaprInvoke(unique_ptr<RpcController> controller,
+void NoslatedDataChannel::CallDaprInvoke(unique_ptr<RpcController> controller,
                                       const Local<Object> params) {
   Isolate* isolate = immortal_->isolate();
   HandleScope scope(isolate);
@@ -701,7 +701,7 @@ void AliceDataChannel::CallDaprInvoke(unique_ptr<RpcController> controller,
       });
 }
 
-void AliceDataChannel::CallDaprBinding(unique_ptr<RpcController> controller,
+void NoslatedDataChannel::CallDaprBinding(unique_ptr<RpcController> controller,
                                        const Local<Object> params) {
   Isolate* isolate = immortal_->isolate();
   HandleScope scope(isolate);
@@ -782,7 +782,7 @@ void AliceDataChannel::CallDaprBinding(unique_ptr<RpcController> controller,
       });
 }
 
-void AliceDataChannel::CallExtensionBinding(
+void NoslatedDataChannel::CallExtensionBinding(
     unique_ptr<RpcController> controller, const Local<Object> params) {
   Isolate* isolate = immortal_->isolate();
   HandleScope scope(isolate);
@@ -865,7 +865,7 @@ void AliceDataChannel::CallExtensionBinding(
       });
 }
 
-void AliceDataChannel::CallResourcePut(unique_ptr<RpcController> controller,
+void NoslatedDataChannel::CallResourcePut(unique_ptr<RpcController> controller,
                                        const v8::Local<v8::Object> params) {
   Isolate* isolate = immortal_->isolate();
   HandleScope scope(isolate);
@@ -929,7 +929,7 @@ void AliceDataChannel::CallResourcePut(unique_ptr<RpcController> controller,
       });
 }
 
-void AliceDataChannel::OnConnect(UvSocketHolder::Pointer socket) {
+void NoslatedDataChannel::OnConnect(UvSocketHolder::Pointer socket) {
   per_process::Debug(DebugCategory::AGENT_CHANNEL, "on connect\n");
   socket_ = std::move(socket);
   if (socket_ != nullptr) {
@@ -938,7 +938,7 @@ void AliceDataChannel::OnConnect(UvSocketHolder::Pointer socket) {
     auto msg = std::make_unique<CredentialsRequestMessage>();
     msg->set_cred(cred_);
     msg->set_type(CredentialTargetType::Data);
-    this->AliceService::Request(
+    this->NoslatedService::Request(
         move(controller),
         move(msg),
         [this](CanonicalCode code,
@@ -956,11 +956,11 @@ void AliceDataChannel::OnConnect(UvSocketHolder::Pointer socket) {
   }
 }
 
-Local<Value> AliceDataChannel::ErrorMessageToJsError(
+Local<Value> NoslatedDataChannel::ErrorMessageToJsError(
     CanonicalCode code, unique_ptr<ErrorResponseMessage> error) {
   auto isolate = immortal_->isolate();
   auto context = immortal_->context();
-  std::string msg = "Alice request failed with CanonicalCode::";
+  std::string msg = "Noslated request failed with CanonicalCode::";
   std::string peer_message = "";
   std::string peer_stack = "";
 #define V(KEY)                                                                 \
@@ -968,7 +968,7 @@ Local<Value> AliceDataChannel::ErrorMessageToJsError(
     msg += #KEY;                                                               \
     break;                                                                     \
   }
-  switch (code) { ALICE_CANONICAL_CODE_KEYS(V) }
+  switch (code) { NOSLATED_CANONICAL_CODE_KEYS(V) }
 #undef V
 
   if (error != nullptr && error->has_message()) {
@@ -999,16 +999,16 @@ Local<Value> AliceDataChannel::ErrorMessageToJsError(
   return exception;
 }
 
-void AliceDataChannel::OnError() {
+void NoslatedDataChannel::OnError() {
   ELOG("on error");
 }
 
-void AliceDataChannel::Disconnected(SessionId) {
+void NoslatedDataChannel::Disconnected(SessionId) {
   per_process::Debug(DebugCategory::AGENT_CHANNEL, "on disconnected\n");
   socket_.reset();
 }
 
-void AliceDataChannel::Closed() {
+void NoslatedDataChannel::Closed() {
   per_process::Debug(DebugCategory::AGENT_CHANNEL, "on closed\n");
   closed_ = true;
 }
@@ -1030,9 +1030,9 @@ AWORKER_METHOD(SetHandler) {
 }
 
 template <
-    void (AliceDataChannel::*func)(std::unique_ptr<RpcController> controller,
+    void (NoslatedDataChannel::*func)(std::unique_ptr<RpcController> controller,
                                    const v8::Local<v8::Object> params)>
-AWORKER_METHOD(AliceDataChannel::JsCall) {
+AWORKER_METHOD(NoslatedDataChannel::JsCall) {
   Immortal* immortal = Immortal::GetCurrent(info);
 
   Isolate* isolate = immortal->isolate();
@@ -1046,8 +1046,8 @@ AWORKER_METHOD(AliceDataChannel::JsCall) {
     return;
   }
 
-  std::shared_ptr<AliceDataChannel> channel =
-      std::static_pointer_cast<AliceDataChannel>(
+  std::shared_ptr<NoslatedDataChannel> channel =
+      std::static_pointer_cast<NoslatedDataChannel>(
           immortal->agent_data_channel());
 
   Local<Object> params = info[0].As<Object>();
@@ -1080,8 +1080,8 @@ AWORKER_METHOD(Feedback) {
     return;
   }
 
-  std::shared_ptr<AliceDataChannel> channel =
-      std::static_pointer_cast<AliceDataChannel>(
+  std::shared_ptr<NoslatedDataChannel> channel =
+      std::static_pointer_cast<NoslatedDataChannel>(
           immortal->agent_data_channel());
 
   Local<Number> id = info[0].As<Number>();
@@ -1128,7 +1128,7 @@ AWORKER_METHOD(Unref) {
   immortal->agent_data_channel()->Unref();
 }
 
-#define ALICE_DATA_CHANNEL_METHODS(V)                                          \
+#define NOSLATED_DATA_CHANNEL_METHODS(V)                                          \
   V(CallFetch, fetch)                                                          \
   V(CallFetchAbort, fetchAbort)                                                \
   V(CallStreamOpen, streamOpen)                                                \
@@ -1141,8 +1141,8 @@ AWORKER_METHOD(Unref) {
 AWORKER_BINDING(Init) {
 #define V(method, name)                                                        \
   immortal->SetFunctionProperty(                                               \
-      exports, #name, AliceDataChannel::JsCall<&AliceDataChannel::method>);
-  ALICE_DATA_CHANNEL_METHODS(V)
+      exports, #name, NoslatedDataChannel::JsCall<&NoslatedDataChannel::method>);
+  NOSLATED_DATA_CHANNEL_METHODS(V)
 #undef V
 
   immortal->SetFunctionProperty(exports, "setCallback", SetCallback);
@@ -1154,8 +1154,8 @@ AWORKER_BINDING(Init) {
 
 AWORKER_EXTERNAL_REFERENCE(Init) {
 #define V(method, name)                                                        \
-  registry->Register(AliceDataChannel::JsCall<&AliceDataChannel::method>);
-  ALICE_DATA_CHANNEL_METHODS(V)
+  registry->Register(NoslatedDataChannel::JsCall<&NoslatedDataChannel::method>);
+  NOSLATED_DATA_CHANNEL_METHODS(V)
 #undef V
 
   registry->Register(SetCallback);
@@ -1168,6 +1168,6 @@ AWORKER_EXTERNAL_REFERENCE(Init) {
 }  // namespace agent
 }  // namespace aworker
 
-AWORKER_BINDING_REGISTER(alice_data_channel,
+AWORKER_BINDING_REGISTER(noslated_data_channel,
                          aworker::agent::Init,
                          aworker::agent::Init)

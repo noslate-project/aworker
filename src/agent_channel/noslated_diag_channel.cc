@@ -1,4 +1,4 @@
-#include "agent_channel/alice_diag_channel.h"
+#include "agent_channel/noslated_diag_channel.h"
 #include "aworker_logger.h"
 #include "debug_utils.h"
 #include "immortal.h"
@@ -11,17 +11,17 @@ namespace agent {
 
 using std::unique_ptr;
 
-AliceDiagChannel::AliceDiagChannel(Immortal* immortal,
+NoslatedDiagChannel::NoslatedDiagChannel(Immortal* immortal,
                                    std::string server_path,
                                    std::string credential)
     : AgentDiagChannel(immortal->watchdog(), credential),
-      AliceService(),
+      NoslatedService(),
       immortal_(immortal),
       server_path_(server_path) {}
 
-AliceDiagChannel::~AliceDiagChannel() {}
+NoslatedDiagChannel::~NoslatedDiagChannel() {}
 
-void AliceDiagChannel::Start(uv_loop_t* loop) {
+void NoslatedDiagChannel::Start(uv_loop_t* loop) {
   per_process::Debug(DebugCategory::AGENT_CHANNEL, "start diag channel\n");
   loop_ = loop;
   auto loop_handle = std::make_shared<UvLoop>(loop_);
@@ -31,10 +31,10 @@ void AliceDiagChannel::Start(uv_loop_t* loop) {
       loop_handle,
       server_path_,
       socket_delegate_,
-      std::bind(&AliceDiagChannel::OnConnect, this, std::placeholders::_1));
+      std::bind(&NoslatedDiagChannel::OnConnect, this, std::placeholders::_1));
 }
 
-void AliceDiagChannel::AssignInspectorDelegate(
+void NoslatedDiagChannel::AssignInspectorDelegate(
     std::unique_ptr<AgentDiagChannelInspectorDelegate> delegate) {
   per_process::Debug(DebugCategory::AGENT_CHANNEL,
                      "diagnostics channel assigned inspector delegate\n");
@@ -45,20 +45,20 @@ void AliceDiagChannel::AssignInspectorDelegate(
   }
 }
 
-void AliceDiagChannel::Stop() {
+void NoslatedDiagChannel::Stop() {
   connected_ = true;
   socket_.reset();
 }
 
-void AliceDiagChannel::TerminateConnections() {
+void NoslatedDiagChannel::TerminateConnections() {
   delegate_.reset();
 }
 
-void AliceDiagChannel::StopAcceptingNewConnections() {
+void NoslatedDiagChannel::StopAcceptingNewConnections() {
   stopping_ = true;
 }
 
-void AliceDiagChannel::Send(int session_id, std::string message) {
+void NoslatedDiagChannel::Send(int session_id, std::string message) {
   auto controller = NewControllerWithTimeout(20000);
   auto msg = std::make_unique<InspectorEventRequestMessage>();
   msg->set_session_id(session_id);
@@ -77,7 +77,7 @@ void AliceDiagChannel::Send(int session_id, std::string message) {
           });
 }
 
-void AliceDiagChannel::InspectorStart(
+void NoslatedDiagChannel::InspectorStart(
     unique_ptr<RpcController> controller,
     const unique_ptr<InspectorStartRequestMessage> req,
     unique_ptr<InspectorStartResponseMessage> res,
@@ -103,7 +103,7 @@ void AliceDiagChannel::InspectorStart(
   });
 }
 
-void AliceDiagChannel::InspectorStartSession(
+void NoslatedDiagChannel::InspectorStartSession(
     unique_ptr<RpcController> controller,
     const unique_ptr<InspectorStartSessionRequestMessage> req,
     unique_ptr<InspectorStartSessionResponseMessage> res,
@@ -125,7 +125,7 @@ void AliceDiagChannel::InspectorStartSession(
   closure(CanonicalCode::OK, nullptr, std::move(res));
 }
 
-void AliceDiagChannel::InspectorEndSession(
+void NoslatedDiagChannel::InspectorEndSession(
     unique_ptr<RpcController> controller,
     const unique_ptr<InspectorEndSessionRequestMessage> req,
     unique_ptr<InspectorEndSessionResponseMessage> res,
@@ -143,7 +143,7 @@ void AliceDiagChannel::InspectorEndSession(
   closure(CanonicalCode::OK, nullptr, std::move(res));
 }
 
-void AliceDiagChannel::InspectorGetTargets(
+void NoslatedDiagChannel::InspectorGetTargets(
     unique_ptr<RpcController> controller,
     const unique_ptr<InspectorGetTargetsRequestMessage> req,
     unique_ptr<InspectorGetTargetsResponseMessage> res,
@@ -168,7 +168,7 @@ void AliceDiagChannel::InspectorGetTargets(
   closure(CanonicalCode::OK, nullptr, std::move(res));
 }
 
-void AliceDiagChannel::InspectorCommand(
+void NoslatedDiagChannel::InspectorCommand(
     unique_ptr<RpcController> controller,
     const unique_ptr<InspectorCommandRequestMessage> req,
     unique_ptr<InspectorCommandResponseMessage> res,
@@ -185,7 +185,7 @@ void AliceDiagChannel::InspectorCommand(
   closure(CanonicalCode::OK, nullptr, std::move(res));
 }
 
-void AliceDiagChannel::TracingStart(
+void NoslatedDiagChannel::TracingStart(
     unique_ptr<RpcController> controller,
     unique_ptr<TracingStartRequestMessage> req,
     unique_ptr<TracingStartResponseMessage> res,
@@ -210,7 +210,7 @@ void AliceDiagChannel::TracingStart(
   });
 }
 
-void AliceDiagChannel::TracingStop(
+void NoslatedDiagChannel::TracingStop(
     unique_ptr<RpcController> controller,
     unique_ptr<TracingStopRequestMessage> req,
     unique_ptr<TracingStopResponseMessage> res,
@@ -227,17 +227,17 @@ void AliceDiagChannel::TracingStop(
   });
 }
 
-void AliceDiagChannel::Disconnected(SessionId session_id) {
+void NoslatedDiagChannel::Disconnected(SessionId session_id) {
   per_process::Debug(DebugCategory::AGENT_CHANNEL,
                      "diagnostics channel disconnected\n");
   socket_.reset();
 }
 
-void AliceDiagChannel::OnError() {
+void NoslatedDiagChannel::OnError() {
   ELOG("diagnostics channel error");
 }
 
-void AliceDiagChannel::SendInspectorStarted() {
+void NoslatedDiagChannel::SendInspectorStarted() {
   auto controller = NewControllerWithTimeout(20000);
   auto msg = std::make_unique<InspectorStartedRequestMessage>();
   per_process::Debug(DebugCategory::AGENT_CHANNEL,
@@ -254,7 +254,7 @@ void AliceDiagChannel::SendInspectorStarted() {
           });
 }
 
-void AliceDiagChannel::OnConnect(UvSocketHolder::Pointer socket) {
+void NoslatedDiagChannel::OnConnect(UvSocketHolder::Pointer socket) {
   per_process::Debug(DebugCategory::AGENT_CHANNEL,
                      "diagnostics channel on connect\n");
   socket_ = std::move(socket);
@@ -265,7 +265,7 @@ void AliceDiagChannel::OnConnect(UvSocketHolder::Pointer socket) {
     auto msg = std::make_unique<CredentialsRequestMessage>();
     msg->set_cred(credential());
     msg->set_type(CredentialTargetType::Diagnostics);
-    this->AliceService::Request(
+    this->NoslatedService::Request(
         move(controller),
         move(msg),
         [this](CanonicalCode code,

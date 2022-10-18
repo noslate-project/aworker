@@ -20,8 +20,8 @@
     ],
     'aworker_snapshot_main%': '',
     'aworker_source_files': [
-      'src/agent_channel/alice_data_channel.cc',
-      'src/agent_channel/alice_diag_channel.cc',
+      'src/agent_channel/noslated_data_channel.cc',
+      'src/agent_channel/noslated_diag_channel.cc',
       'src/agent_channel/diag_channel.cc',
       'src/alarm_timer.cc',
       'src/async_wrap.cc',
@@ -170,9 +170,9 @@
       'lib/zlib.js',
     ],
     'aworker_cctest_source_files': [
-      'test/cctest/ipc/stress_test_alice_service.cc',
-      'test/cctest/ipc/test_alice_service.cc',
-      'test/cctest/ipc/test_alice_socket.cc',
+      'test/cctest/ipc/stress_test_noslated_service.cc',
+      'test/cctest/ipc/test_noslated_service.cc',
+      'test/cctest/ipc/test_noslated_socket.cc',
       'test/cctest/proto/test.pb.cc',
       'test/cctest/url/ipvx.cc',
       'test/cctest/url/url.cc',

@@ -18,7 +18,7 @@ enum MessageKind {
 }
 
 /**
- * Update alice_message.h to generate corresponding service interface.
+ * Update noslated native noslated_message.hh to generate corresponding service interface.
  */
 enum RequestKind {
   Nil = 0;
@@ -58,7 +58,7 @@ enum RequestKind {
 }
 
 /**
- * Update alice_socket.hh to set the correct MessageHeader byte size.
+ * Update noslated native noslated_socket.hh to set the correct MessageHeader byte size.
  * TODO: compact size;
  */
 message MessageHeader {

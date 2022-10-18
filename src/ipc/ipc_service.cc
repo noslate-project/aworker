@@ -7,7 +7,7 @@ using std::move;
 using std::unique_ptr;
 
 #define V(TYPE)                                                                \
-  void AliceService::Request(unique_ptr<RpcController> controller,             \
+  void NoslatedService::Request(unique_ptr<RpcController> controller,             \
                              unique_ptr<TYPE##RequestMessage> req,             \
                              Closure<TYPE##ResponseMessage> closure) {         \
     Request_(move(controller),                                                 \
@@ -21,10 +21,10 @@ using std::unique_ptr;
                closure(code, move(error), move(it));                           \
              });                                                               \
   }
-ALICE_REQUEST_TYPES(V)
+NOSLATED_REQUEST_TYPES(V)
 #undef V
 
-void AliceService::Request_(unique_ptr<RpcController> controller,
+void NoslatedService::Request_(unique_ptr<RpcController> controller,
                             RequestKind kind,
                             unique_ptr<Message> req,
                             Closure<Message> closure) {

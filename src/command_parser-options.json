@@ -87,11 +87,6 @@
       "meta": "<CRED>",
       "desc": "the agent credential"
     },
-    "agent-type": {
-      "meta": "<TYPE>",
-      "desc": "the agent type (alice|test), default: alice",
-      "default": "alice"
-    },
     "location": {
       "meta": "<HREF>",
       "desc": "value of 'globalThis.location' used by some web APIs"

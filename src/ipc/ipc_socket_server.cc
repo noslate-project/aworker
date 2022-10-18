@@ -17,14 +17,14 @@ using std::move;
 using std::shared_ptr;
 using std::unique_ptr;
 
-void AliceSocketServer::AliceSocketServerCloseCallback(uv_handle_t* handle) {
+void NoslatedSocketServer::NoslatedSocketServerCloseCallback(uv_handle_t* handle) {
   uv_pipe_t* it = reinterpret_cast<uv_pipe_t*>(handle);
-  AliceSocketServer* server = ContainerOf(&AliceSocketServer::server_pipe_, it);
+  NoslatedSocketServer* server = ContainerOf(&NoslatedSocketServer::server_pipe_, it);
   server->service_->Closed();
   delete server;
 }
 
-void AliceSocketServer::Initialize() {
+void NoslatedSocketServer::Initialize() {
 #if defined(__POSIX__)
   // Disable SIGPIPE and handle them in place.
   {
@@ -51,18 +51,18 @@ void AliceSocketServer::Initialize() {
     ELOG("uv_listen failed for error(%d, %s)", ret, uv_strerror(ret));
     ABORT();
   }
-  DLOG("alice server started on: %s", server_pipe_name_.c_str());
+  DLOG("noslated server started on: %s", server_pipe_name_.c_str());
 }
 
-void AliceSocketServer::Close() {
-  DLOG("closing alice server");
+void NoslatedSocketServer::Close() {
+  DLOG("closing noslated server");
   connected_sessions_.erase(connected_sessions_.begin(),
                             connected_sessions_.end());
   uv_handle_t* handle = reinterpret_cast<uv_handle_t*>(&server_pipe_);
-  uv_close(handle, AliceSocketServerCloseCallback);
+  uv_close(handle, NoslatedSocketServerCloseCallback);
 }
 
-int AliceSocketServer::Run() {
+int NoslatedSocketServer::Run() {
   bool more = false;
   do {
     uv_run(loop_.get(), UV_RUN_DEFAULT);
@@ -74,15 +74,15 @@ int AliceSocketServer::Run() {
   return 0;
 }
 
-void AliceSocketServer::Ref() {
+void NoslatedSocketServer::Ref() {
   uv_ref(reinterpret_cast<uv_handle_t*>(&server_pipe_));
 }
 
-void AliceSocketServer::Unref() {
+void NoslatedSocketServer::Unref() {
   uv_unref(reinterpret_cast<uv_handle_t*>(&server_pipe_));
 }
 
-void AliceSocketServer::Accept() {
+void NoslatedSocketServer::Accept() {
   auto session = std::make_unique<SocketSession>(next_session_id_++);
   DLOG("new connection: id(%u)", session->id());
 
@@ -98,8 +98,8 @@ void AliceSocketServer::Accept() {
   }
 }
 
-void AliceSocketServer::ListenCallback(uv_stream_t* server, int status) {
-  AliceSocketServer* ami = ContainerOf(&AliceSocketServer::server_pipe_,
+void NoslatedSocketServer::ListenCallback(uv_stream_t* server, int status) {
+  NoslatedSocketServer* ami = ContainerOf(&NoslatedSocketServer::server_pipe_,
                                        reinterpret_cast<uv_pipe_t*>(server));
   CHECK_EQ(0, status);
   ami->Accept();

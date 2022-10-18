@@ -1,6 +1,6 @@
 #include "immortal.h"
-#include "agent_channel/alice_data_channel.h"
-#include "agent_channel/alice_diag_channel.h"
+#include "agent_channel/noslated_data_channel.h"
+#include "agent_channel/noslated_diag_channel.h"
 #include "aworker.h"
 #include "aworker_binding.h"
 #include "binding/internal/aworker_cache.h"
@@ -636,12 +636,12 @@ void Immortal::StartAgentChannel() {
   }
 
   std::shared_ptr<AgentDataChannel> data_channel =
-      std::make_shared<agent::AliceDataChannel>(this,
+      std::make_shared<agent::NoslatedDataChannel>(this,
                                                 parser->agent_ipc_path(),
                                                 parser->agent_cred(),
                                                 parser->ref_agent());
   std::shared_ptr<AgentDiagChannel> diag_channel =
-      std::make_shared<agent::AliceDiagChannel>(
+      std::make_shared<agent::NoslatedDiagChannel>(
           this, parser->agent_ipc_path(), parser->agent_cred());
 
   set_agent_data_channel(data_channel);

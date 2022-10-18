@@ -2,7 +2,7 @@
 
 const childProcess = require('child_process');
 const fixtures = require('./fixtures');
-const { AliceAworkerShell, resolveAlice } = require('../../tools/shell');
+const { NoslatedAworkerShell, resolveNoslated } = require('../../tools/shell');
 const ResourceServer = require('./resource-server');
 const { buildType } = require('./fixtures');
 
@@ -27,11 +27,11 @@ function spawnAworker(args, options) {
   return cp;
 }
 
-const agentSockPath = fixtures.path('tmpdir', 'alice.sock');
+const agentSockPath = fixtures.path('tmpdir', 'noslated.sock');
 function spawnAworkerWithAgent(args, options) {
   const cp = childProcess.spawn(process.execPath, [
     fixtures.path('tools', 'shell.js'),
-    '--agent-module-path', resolveAlice(),
+    '--agent-module-path', resolveNoslated(),
     '--agent-server-path', agentSockPath,
     '--bin', fixtures.path('product', 'aworker'),
     ...args,
@@ -100,14 +100,14 @@ function sleepMaybe(ms) {
 }
 
 async function spawnAworkerWithAgent2(argv, options) {
-  const shell = new AliceAworkerShell({
-    agentModulePath: resolveAlice(),
+  const shell = new NoslatedAworkerShell({
+    agentModulePath: resolveNoslated(),
     agentServerPath: agentSockPath,
     aworkerExecutablePath: fixtures.path('product', 'aworker'),
     argv,
   });
 
-  await shell.startAliceAgent();
+  await shell.startNoslatedAgent();
   if (options.startInspectorServer) {
     await shell.startInspectorServer();
   }

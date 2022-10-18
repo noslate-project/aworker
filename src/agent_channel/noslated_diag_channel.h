@@ -1,5 +1,5 @@
-#ifndef SRC_AGENT_CHANNEL_ALICE_DIAG_CHANNEL_H_
-#define SRC_AGENT_CHANNEL_ALICE_DIAG_CHANNEL_H_
+#ifndef SRC_AGENT_CHANNEL_NOSLATED_DIAG_CHANNEL_H_
+#define SRC_AGENT_CHANNEL_NOSLATED_DIAG_CHANNEL_H_
 #include "diag_channel.h"
 #include "immortal.h"
 #include "ipc/interface.h"
@@ -13,12 +13,12 @@ namespace agent {
 
 using namespace ::aworker::ipc;  // NOLINT(build/namespaces)
 
-class AliceDiagChannel : public AgentDiagChannel, public AliceService {
+class NoslatedDiagChannel : public AgentDiagChannel, public NoslatedService {
  public:
-  explicit AliceDiagChannel(Immortal* immortal,
+  explicit NoslatedDiagChannel(Immortal* immortal,
                             std::string server_path,
                             std::string credential);
-  ~AliceDiagChannel();
+  ~NoslatedDiagChannel();
 
   void Start(uv_loop_t* loop) override;
   void Stop() override;
@@ -74,7 +74,7 @@ class AliceDiagChannel : public AgentDiagChannel, public AliceService {
  private:
   class ClientDelegate : public DelegateImpl {
    public:
-    ClientDelegate(std::shared_ptr<AliceDiagChannel> channel,
+    ClientDelegate(std::shared_ptr<NoslatedDiagChannel> channel,
                    std::shared_ptr<UvLoop> loop)
         : DelegateImpl(channel, loop), channel_(channel) {}
     std::shared_ptr<SocketHolder> socket() override {
@@ -87,7 +87,7 @@ class AliceDiagChannel : public AgentDiagChannel, public AliceService {
     void OnError() override { channel_->OnError(); };
 
    private:
-    std::shared_ptr<AliceDiagChannel> channel_;
+    std::shared_ptr<NoslatedDiagChannel> channel_;
   };
 
   void OnConnect(UvSocketHolder::Pointer socket);
@@ -107,4 +107,4 @@ class AliceDiagChannel : public AgentDiagChannel, public AliceService {
 }  // namespace agent
 }  // namespace aworker
 
-#endif  // SRC_AGENT_CHANNEL_ALICE_DIAG_CHANNEL_H_
+#endif  // SRC_AGENT_CHANNEL_NOSLATED_DIAG_CHANNEL_H_

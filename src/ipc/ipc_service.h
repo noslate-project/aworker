@@ -9,7 +9,7 @@
 namespace aworker {
 namespace ipc {
 
-class AliceService;
+class NoslatedService;
 
 class RpcController {
  public:
@@ -32,13 +32,13 @@ class RpcController {
   RequestId request_id_;
   uint64_t timeout_;
 
-  friend AliceService;
+  friend NoslatedService;
 };
 
-class AliceService {
+class NoslatedService {
  public:
-  AliceService() {}
-  virtual ~AliceService() = default;
+  NoslatedService() {}
+  virtual ~NoslatedService() = default;
 
   std::unique_ptr<RpcController> NewControllerWithTimeout(uint64_t ms) {
     return std::make_unique<RpcController>(0, next_seq(), ms);
@@ -53,7 +53,7 @@ class AliceService {
   void Request(std::unique_ptr<RpcController> controller,                      \
                std::unique_ptr<TYPE##RequestMessage> req,                      \
                Closure<TYPE##ResponseMessage> closure);
-  ALICE_REQUEST_TYPES(V)
+  NOSLATED_REQUEST_TYPES(V)
 #undef V
 
   // As Server
@@ -66,7 +66,7 @@ class AliceService {
     error->set_message("Not Implemented");                                     \
     closure(CanonicalCode::NOT_IMPLEMENTED, move(error), nullptr);             \
   };
-  ALICE_REQUEST_TYPES(V)
+  NOSLATED_REQUEST_TYPES(V)
 #undef V
 
   virtual void Disconnected(SessionId session_id) = 0;

@@ -77,7 +77,7 @@ TEST(Aworker, InitializeAndBootstrap) {
   // Per-execution bindings like commandline options should not present in this
   // list.
   std::set<std::string> expected_loaded_bindings = {
-      "alice_data_channel",
+      "noslated_data_channel",
       "bytes",
       "cache",
       "constants",

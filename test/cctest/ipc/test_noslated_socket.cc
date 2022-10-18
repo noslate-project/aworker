@@ -14,10 +14,10 @@ using std::unique_ptr;
 namespace aworker {
 namespace ipc {
 namespace {
-class AliceServer : public AliceService {
+class NoslatedServer : public NoslatedService {
  private:
   static void AsyncCb(uv_async_t* handle) {
-    AliceServer* self = ContainerOf(&AliceServer::stop_, handle);
+    NoslatedServer* self = ContainerOf(&NoslatedServer::stop_, handle);
     uv_close(reinterpret_cast<uv_handle_t*>(handle), CloseCb);
     self->server_->Close();
   }
@@ -27,7 +27,7 @@ class AliceServer : public AliceService {
   void Start(std::string server_socket_path) {
     uv_loop_init(&loop_);
     uv_async_init(&loop_, &stop_, AsyncCb);
-    server_ = new server::AliceSocketServer(
+    server_ = new server::NoslatedSocketServer(
         unowned_ptr(&loop_), server_socket_path, unowned_ptr(this));
     server_->Initialize();
     work_thread_ = std::thread([this]() { uv_run(&loop_, UV_RUN_DEFAULT); });
@@ -65,15 +65,15 @@ class AliceServer : public AliceService {
   std::thread work_thread_;
   uv_loop_t loop_;
   uv_async_t stop_;
-  server::AliceSocketServer* server_;
+  server::NoslatedSocketServer* server_;
 };
 
 namespace uv {
-class AliceClient : public AliceService {
+class NoslatedClient : public NoslatedService {
  public:
   class ClientDelegate : public DelegateImpl {
    public:
-    ClientDelegate(shared_ptr<AliceClient> client, shared_ptr<EventLoop> loop)
+    ClientDelegate(shared_ptr<NoslatedClient> client, shared_ptr<EventLoop> loop)
         : DelegateImpl(client, loop), client_(client) {}
     std::shared_ptr<SocketHolder> socket() override {
       if (client_->socket_ == nullptr) {
@@ -85,9 +85,9 @@ class AliceClient : public AliceService {
     void OnError() override { client_->OnError(); };
 
    private:
-    shared_ptr<AliceClient> client_;
+    shared_ptr<NoslatedClient> client_;
   };
-  explicit AliceClient(shared_ptr<UvLoop> loop) {
+  explicit NoslatedClient(shared_ptr<UvLoop> loop) {
     delegate_ = std::make_shared<ClientDelegate>(
         unowned_ptr(this), std::static_pointer_cast<EventLoop>(loop));
   }
@@ -129,17 +129,17 @@ class AliceClient : public AliceService {
 };
 }  // namespace uv
 
-TEST(AliceSocketUvTest, Main) {
+TEST(NoslatedSocketUvTest, Main) {
   char server_path[PATH_MAX];
   realpath("/tmp/.noslated.sock", server_path);
-  AliceServer server;
+  NoslatedServer server;
   server.Start(server_path);
 
   uv_loop_t client_loop;
   uv_loop_init(&client_loop);
 
-  std::shared_ptr<uv::AliceClient> client =
-      std::make_shared<uv::AliceClient>(make_shared<UvLoop>(&client_loop));
+  std::shared_ptr<uv::NoslatedClient> client =
+      std::make_shared<uv::NoslatedClient>(make_shared<UvLoop>(&client_loop));
   UvSocketHolder::Connect(make_shared<UvLoop>(&client_loop),
                           server_path,
                           client->delegate(),
