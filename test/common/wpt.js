@@ -7,7 +7,7 @@ const readline = require('readline');
 const path = require('path');
 const fixtures = require('./fixtures');
 const { StatusRuleSet } = require('./runner');
-const { AliceAworkerRunner } = require('./agent-runner');
+const { NoslatedAworkerRunner } = require('./agent-runner');
 
 class ResourceLoader {
   toRealFilePath(from, url) {
@@ -145,7 +145,7 @@ class StatusLoader {
   }
 }
 
-class WPTRunner extends AliceAworkerRunner {
+class WPTRunner extends NoslatedAworkerRunner {
   wptHttpd;
   wptResourceServerAddr = 'http://localhost:8000';
   constructor() {

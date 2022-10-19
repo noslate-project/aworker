@@ -37,7 +37,7 @@ promise_test(async t => {
     await fetch('http://unreachable-host/echo', { method: 'GET' });
     assert_unreached('unreachable');
   } catch (e) {
-    assert_regexp_match(String(e), /Alice request failed/);
+    assert_regexp_match(String(e), /Noslated request failed/);
     assert_equals(e.code, 1);
     assert_regexp_match(e.peerMessage, /getaddrinfo (ENOTFOUND|EAI_AGAIN) unreachable-host/);
   }

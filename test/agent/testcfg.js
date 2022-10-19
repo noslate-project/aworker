@@ -1,5 +1,5 @@
 'use strict';
 
 module.exports = {
-  runner: 'alice-aworker',
+  runner: 'noslated-aworker',
 };

@@ -1,5 +1,5 @@
-#ifndef SRC_AGENT_CHANNEL_ALICE_DATA_CHANNEL_H_
-#define SRC_AGENT_CHANNEL_ALICE_DATA_CHANNEL_H_
+#ifndef SRC_AGENT_CHANNEL_NOSLATED_DATA_CHANNEL_H_
+#define SRC_AGENT_CHANNEL_NOSLATED_DATA_CHANNEL_H_
 #include "agent_channel/data_channel.h"
 #include "aworker_binding.h"
 #include "ipc/interface.h"
@@ -14,17 +14,17 @@ namespace agent {
 using namespace ::aworker::ipc;  // NOLINT(build/namespaces)
 using std::unique_ptr;
 
-class AliceDataChannel : public AgentDataChannel, public AliceService {
+class NoslatedDataChannel : public AgentDataChannel, public NoslatedService {
  public:
-  AliceDataChannel(Immortal* immortal,
-                   std::string server_path,
-                   std::string credential,
-                   bool refed);
-  virtual ~AliceDataChannel();
+  NoslatedDataChannel(Immortal* immortal,
+                      std::string server_path,
+                      std::string credential,
+                      bool refed);
+  virtual ~NoslatedDataChannel();
 
-  template <
-      void (AliceDataChannel::*func)(std::unique_ptr<RpcController> controller,
-                                     const v8::Local<v8::Object> params)>
+  template <void (NoslatedDataChannel::*func)(
+      std::unique_ptr<RpcController> controller,
+      const v8::Local<v8::Object> params)>
   static AWORKER_METHOD(JsCall);
   void Callback(const uint32_t id,
                 const v8::Local<v8::Value> exception,
@@ -88,7 +88,7 @@ class AliceDataChannel : public AgentDataChannel, public AliceService {
  private:
   class ClientDelegate : public DelegateImpl {
    public:
-    ClientDelegate(std::shared_ptr<AliceDataChannel> channel,
+    ClientDelegate(std::shared_ptr<NoslatedDataChannel> channel,
                    std::shared_ptr<UvLoop> loop)
         : DelegateImpl(channel, loop), channel_(channel) {}
     std::shared_ptr<SocketHolder> socket() override {
@@ -101,7 +101,7 @@ class AliceDataChannel : public AgentDataChannel, public AliceService {
     void OnError() override { channel_->OnError(); };
 
    private:
-    std::shared_ptr<AliceDataChannel> channel_;
+    std::shared_ptr<NoslatedDataChannel> channel_;
   };
 
   v8::Local<v8::Value> ErrorMessageToJsError(
@@ -119,4 +119,4 @@ class AliceDataChannel : public AgentDataChannel, public AliceService {
 }  // namespace agent
 }  // namespace aworker
 
-#endif  // SRC_AGENT_CHANNEL_ALICE_DATA_CHANNEL_H_
+#endif  // SRC_AGENT_CHANNEL_NOSLATED_DATA_CHANNEL_H_

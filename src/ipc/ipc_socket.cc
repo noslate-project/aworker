@@ -33,22 +33,22 @@ void ProtobufLogHandler(google::protobuf::LogLevel level,
        message.c_str());
 }
 
-void AliceDecoder::Init() {
+void NoslatedDecoder::Init() {
   google::protobuf::SetLogHandler(ProtobufLogHandler);
 }
 
-AliceDecoder::AliceDecoder() {}
+NoslatedDecoder::NoslatedDecoder() {}
 
-void AliceDecoder::InsertBuffer(const char* base, size_t len) {
-  DLOG("AliceDecoder::InsertBuffer(%p) %zu", this, len);
+void NoslatedDecoder::InsertBuffer(const char* base, size_t len) {
+  DLOG("NoslatedDecoder::InsertBuffer(%p) %zu", this, len);
   if (len > 0) {
     buffer_.insert(buffer_.end(), base, base + len);
   }
 }
 
-DecodingState AliceDecoder::Decode() {
+DecodingState NoslatedDecoder::Decode() {
   if (buffer_.size() < MessageHeaderSize) {
-    DLOG("AliceDecoder::Decode(%p) buffer size less than header: %zu",
+    DLOG("NoslatedDecoder::Decode(%p) buffer size less than header: %zu",
          this,
          buffer_.size());
     return DecodingState::DecodingStateMore;
@@ -63,7 +63,8 @@ DecodingState AliceDecoder::Decode() {
     read_size_ = MessageHeaderSize;
   }
   if (buffer_.size() < (MessageHeaderSize + header_->content_length())) {
-    DLOG("AliceDecoder::Decode buffer size less than content: %zu, wanted: %zu",
+    DLOG("NoslatedDecoder::Decode buffer size less than content: %zu, wanted: "
+         "%zu",
          buffer_.size(),
          (MessageHeaderSize + header_->content_length()));
     return DecodingState::DecodingStateMore;
@@ -83,7 +84,7 @@ DecodingState AliceDecoder::Decode() {
   return DecodingState::DecodingStateError;
 }
 
-DecodingState AliceDecoder::DecodeRequest() {
+DecodingState NoslatedDecoder::DecodeRequest() {
 #define V(TYPE)                                                                \
   case RequestKind::TYPE: {                                                    \
     auto msg = new TYPE##RequestMessage();                                     \
@@ -97,7 +98,7 @@ DecodingState AliceDecoder::DecodeRequest() {
     break;                                                                     \
   }
   switch (header_->request_kind()) {
-    ALICE_REQUEST_TYPES(V)
+    NOSLATED_REQUEST_TYPES(V)
     default:
       DCHECK(false);
       DLOG("unrecognizable request body with request kind %d",
@@ -108,7 +109,7 @@ DecodingState AliceDecoder::DecodeRequest() {
   return DecodingState::DecodingStateOk;
 }
 
-DecodingState AliceDecoder::DecodeResponse() {
+DecodingState NoslatedDecoder::DecodeResponse() {
   if (static_cast<CanonicalCode>(header_->code()) != CanonicalCode::OK) {
     auto msg = new ErrorResponseMessage();
     if (!msg->ParseFromArray(buffer_.cbegin().base() + MessageHeaderSize,
@@ -133,7 +134,7 @@ DecodingState AliceDecoder::DecodeResponse() {
     break;                                                                     \
   }
   switch (header_->request_kind()) {
-    ALICE_REQUEST_TYPES(V)
+    NOSLATED_REQUEST_TYPES(V)
     default:
       DCHECK(false);
       DLOG("unrecognizable response body with request kind %d",
@@ -144,8 +145,8 @@ DecodingState AliceDecoder::DecodeResponse() {
   return DecodingState::DecodingStateOk;
 }
 
-Message* AliceDecoder::TakeContentOwnership() {
-  DLOG("AliceDecoder::TakeContentOwnership: %zu, read: %zu",
+Message* NoslatedDecoder::TakeContentOwnership() {
+  DLOG("NoslatedDecoder::TakeContentOwnership: %zu, read: %zu",
        buffer_.size(),
        read_size_);
   Message* content = content_;

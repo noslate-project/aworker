@@ -4,7 +4,7 @@
 const fs = require('fs').promises;
 const path = require('path');
 const { NodeRunner, AworkerRunner } = require('../test/common/runner');
-const { AliceAworkerRunner } = require('../test/common/agent-runner');
+const { NoslatedAworkerRunner } = require('../test/common/agent-runner');
 const { WPTRunner } = require('../test/common/wpt');
 const { PseudoTtyRunner } = require('../test/common/pseudo_tty');
 
@@ -21,7 +21,7 @@ class TestCfg {
 }
 
 const runners = {
-  'alice-aworker': AliceAworkerRunner,
+  'noslated-aworker': NoslatedAworkerRunner,
   aworker: AworkerRunner,
   node: NodeRunner,
   wpt: WPTRunner,

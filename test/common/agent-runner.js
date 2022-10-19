@@ -4,7 +4,7 @@ const { AworkerRunner } = require('./runner');
 const fixtures = require('./fixtures');
 const path = require('path');
 
-class AliceAworkerRunner extends AworkerRunner {
+class NoslatedAworkerRunner extends AworkerRunner {
   agentServerPath;
   agent;
 
@@ -15,26 +15,25 @@ class AliceAworkerRunner extends AworkerRunner {
 
     this.execArgv = [
       '--has-agent',
-      '--agent-type=alice',
       `--agent-ipc=${this.agentServerPath}`,
       '--agent-cred=foobar',
     ];
   }
 
   async runJsTests(...args) {
-    await this.startAliceAgent();
+    await this.startNoslatedAgent();
     const ret = await super.runJsTests(...args);
-    await this.stopAliceAgent();
+    await this.stopNoslatedAgent();
     return ret;
   }
 
-  async startAliceAgent() {
-    if (process.env.ALICE_LOG_LEVEL) {
+  async startNoslatedAgent() {
+    if (process.env.NOSLATED_LOG_LEVEL) {
       const { loggers, getPrettySink } = require(path.join(fixtures.path('project', 'noslated'), 'build/lib/loggers'));
       loggers.setSink(getPrettySink());
     }
-    const { AliceDelegateService } = require(path.join(fixtures.path('project', 'noslated'), 'build/delegate'));
-    this.agent = new AliceDelegateService(this.agentServerPath);
+    const { NoslatedDelegateService } = require(path.join(fixtures.path('project', 'noslated'), 'build/delegate'));
+    this.agent = new NoslatedDelegateService(this.agentServerPath);
     await this.agent.start();
     this.agent.register('foobar');
     this.agent.on('disconnect', cred => {
@@ -42,7 +41,7 @@ class AliceAworkerRunner extends AworkerRunner {
     });
   }
 
-  async stopAliceAgent() {
+  async stopNoslatedAgent() {
     if (this.agent == null) {
       return;
     }
@@ -51,13 +50,13 @@ class AliceAworkerRunner extends AworkerRunner {
 }
 
 module.exports = {
-  AliceAworkerRunner,
+  NoslatedAworkerRunner,
 };
 
 if (require.main === module) {
-  const runner = new AliceAworkerRunner('alice', {
+  const runner = new NoslatedAworkerRunner('noslated', {
     agentServerPath: path.join(process.cwd(), 'noslated.sock'),
   });
-  runner.startAliceAgent({ ref: true });
+  runner.startNoslatedAgent({ ref: true });
   console.log('started at', runner.agentServerPath);
 }

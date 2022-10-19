@@ -11,7 +11,7 @@ extern "C" {
 #include "libplatform/libplatform.h"
 #include "v8.h"
 
-#include "agent_channel/alice_data_channel.h"
+#include "agent_channel/noslated_data_channel.h"
 #include "aworker_binding.h"
 #include "aworker_logger.h"
 #include "aworker_perf.h"

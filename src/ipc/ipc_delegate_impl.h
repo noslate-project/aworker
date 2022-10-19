@@ -10,7 +10,7 @@ namespace ipc {
 class DelegateImpl : public SocketDelegate,
                      public std::enable_shared_from_this<DelegateImpl> {
  public:
-  DelegateImpl(std::shared_ptr<AliceService> service,
+  DelegateImpl(std::shared_ptr<NoslatedService> service,
                std::shared_ptr<EventLoop> loop)
       : service_(service), loop_(loop) {}
   ~DelegateImpl();
@@ -35,12 +35,12 @@ class DelegateImpl : public SocketDelegate,
   virtual std::shared_ptr<SocketHolder> socket() { return nullptr; }
   virtual SessionId session_id() { return 0; }
 
-  std::shared_ptr<AliceService> service() { return service_; }
+  std::shared_ptr<NoslatedService> service() { return service_; }
 
  private:
   std::weak_ptr<DelegateImpl> weak_from_this() { return shared_from_this(); }
   void SetCallback(RequestId id, Closure<Message> callback, Timer* timer);
-  std::shared_ptr<AliceService> service_;
+  std::shared_ptr<NoslatedService> service_;
   std::shared_ptr<EventLoop> loop_;
   std::map<RequestId, Closure<Message>> callbacks_;
   std::map<RequestId, Timer*> timers_;

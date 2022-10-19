@@ -7,7 +7,7 @@
 #include "util.h"
 
 #define BUILTIN_BINDINGS(V)                                                    \
-  V(alice_data_channel)                                                        \
+  V(noslated_data_channel)                                                     \
   V(async_wrap)                                                                \
   V(bytes)                                                                     \
   V(cache)                                                                     \

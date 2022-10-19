@@ -3,7 +3,7 @@
 
 const help = `Usage: shell.js <script filename>
   -h, --help                 print usage
-  --agent-module-path <path> Path to alice agent module
+  --agent-module-path <path> Path to noslated agent module
   --bin                      Path to Serverless Worker Executable
   --inspect-brk              Start inspector and pause on JavaScript entry
   --inspect-brk-aworker       Start inspector and pause on aworker JavaScript entry
@@ -14,7 +14,7 @@ const fs = require('fs');
 const path = require('path');
 const childProcess = require('child_process');
 
-class AliceAworkerShell {
+class NoslatedAworkerShell {
   agentModulePath;
   agentServerPath;
   daprAdaptorPath;
@@ -31,7 +31,6 @@ class AliceAworkerShell {
     this.startInspectorServerFlag = startInspectorServer;
     this.execArgv = [
       '--has-agent',
-      '--agent-type=alice',
       `--agent-ipc=${this.agentServerPath}`,
       `--agent-cred=${this.credential}`,
       ...(argv ?? []),
@@ -39,7 +38,7 @@ class AliceAworkerShell {
   }
 
   async run() {
-    await this.startAliceAgent();
+    await this.startNoslatedAgent();
     if (this.startInspectorServerFlag) {
       await this.startInspectorServer();
     }
@@ -86,13 +85,13 @@ class AliceAworkerShell {
     return cp;
   }
 
-  async startAliceAgent() {
-    if (process.env.ALICE_LOG_LEVEL) {
+  async startNoslatedAgent() {
+    if (process.env.NOSLATED_LOG_LEVEL) {
       const { loggers, getPrettySink } = require(path.join(this._agentModulePath, 'build/lib/loggers'));
       loggers.setSink(getPrettySink());
     }
-    const { AliceDelegateService } = require(path.join(this._agentModulePath, 'build/delegate'));
-    this.agent = new AliceDelegateService(this.agentServerPath);
+    const { NoslatedDelegateService } = require(path.join(this._agentModulePath, 'build/delegate'));
+    this.agent = new NoslatedDelegateService(this.agentServerPath);
     await this.agent.start();
     if (this.daprAdaptorPath) {
       const daprAdaptor = require(this.daprAdaptorPath);
@@ -131,8 +130,8 @@ class AliceAworkerShell {
 }
 
 module.exports = {
-  resolveAlice,
-  AliceAworkerShell,
+  resolveNoslated,
+  NoslatedAworkerShell,
 };
 
 /**
@@ -144,7 +143,7 @@ async function main(argv) {
     console.error('Requires Node.js >= v12');
     return process.exit(1);
   }
-  let agentModulePath = resolveAlice();
+  let agentModulePath = resolveNoslated();
   let agentServerPath = path.join(process.cwd(), 'noslated.sock');
   let daprAdaptorPath;
   let aworkerExecutablePath = 'aworker';
@@ -191,7 +190,7 @@ async function main(argv) {
   if (agentModulePath == null) {
     throw new Error('--agent-module-path');
   }
-  const runner = new AliceAworkerShell({
+  const runner = new NoslatedAworkerShell({
     argv: otherArgv,
     agentModulePath,
     agentServerPath,
@@ -202,7 +201,7 @@ async function main(argv) {
   await runner.run();
 }
 
-function resolveAlice() {
+function resolveNoslated() {
   const pkgJsonPath = path.resolve(__dirname, '../package.json');
   try {
     if (fs.statSync(pkgJsonPath).isFile()) {
