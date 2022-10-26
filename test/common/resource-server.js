@@ -15,7 +15,7 @@ class ResourceServer {
 
       res.setHeader('x-server', 'aworker-resource-server');
       res.setHeader('set-cookie', 'foobar');
-      const url = new URL(req.url, 'http://fake');
+      const url = new URL(req.url, `http://${req.headers.host}`);
 
       const setHeaders = (req.headers['x-set-header'] ?? '').split(' ').filter(it => it.trim()).map(it => it.trim().split('='));
       setHeaders.forEach(([ key, val ]) => {
@@ -91,6 +91,12 @@ class ResourceServer {
       if (url.pathname === '/stats') {
         res.end(JSON.stringify(this.#stats));
         this.resetStats();
+        return;
+      }
+      if (url.pathname === '/redirect') {
+        res.statusCode = 301;
+        res.setHeader('Location', new URL('/dump', `http://${req.headers.host}`).toString());
+        res.end();
         return;
       }
       res.statusCode = 400;
