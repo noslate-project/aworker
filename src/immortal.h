@@ -162,7 +162,8 @@ class KVStore {
   V(run_cleanup_hooks, "runCleanupHooks")                                      \
   V(stack, "stack")                                                            \
   V(strategy, "strategy")                                                      \
-  V(tick_task_queue, "tickTaskQueue")
+  V(tick_task_queue, "tickTaskQueue")                                          \
+  V(on_signal, "onSignal")
 
 #define IMMORTAL_DECLARE_PROPERTY(inner_type, exchange_type, name)             \
  public:                                                                       \

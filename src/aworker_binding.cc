@@ -29,7 +29,8 @@
   V(types)                                                                     \
   V(url)                                                                       \
   V(v8)                                                                        \
-  V(zlib)
+  V(zlib)                                                                      \
+  V(signals)
 
 #define V(name) void _register_##name();
 BUILTIN_BINDINGS(V)

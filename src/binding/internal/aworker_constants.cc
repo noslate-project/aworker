@@ -63,11 +63,19 @@ void DefineTraceConstants(Local<Object> target) {
   DEFINE_CONSTANT(target, TRACE_EVENT_PHASE_LINK_IDS);
 }
 
+void DefineSignalConstants(Local<Object> target) {
+  DEFINE_CONSTANT(target, SIGTERM);
+}
+
 AWORKER_BINDING(Init) {
   Isolate* isolate = immortal->isolate();
   Local<Object> tracing_constants = Object::New(isolate);
   CHECK(tracing_constants->SetPrototype(context, v8::Null(isolate)).FromJust());
   DefineTraceConstants(tracing_constants);
+
+  Local<Object> signals_constants = Object::New(isolate);
+  CHECK(signals_constants->SetPrototype(context, v8::Null(isolate)).FromJust());
+  DefineSignalConstants(signals_constants);
 
   DEFINE_CONSTANT_NAME(
       exports, WorkerState::kSerialized, WORKER_STATE_SERIALIZED);
@@ -86,6 +94,9 @@ AWORKER_BINDING(Init) {
       exports, StartupForkMode::kForkUserland, STARTUP_FORK_MODE_FORK_USERLAND);
 
   exports->Set(context, OneByteString(isolate, "tracing"), tracing_constants)
+      .Check();
+
+  exports->Set(context, OneByteString(isolate, "signals"), signals_constants)
       .Check();
 }
 
