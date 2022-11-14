@@ -92,6 +92,7 @@ TEST(Aworker, InitializeAndBootstrap) {
       "tracing",
       "types",
       "url",
+      "signals",
   };
 
   // Per-execution modules like commandline options should not present in this
@@ -139,6 +140,7 @@ TEST(Aworker, InitializeAndBootstrap) {
       "process/execution.js",
       "service_worker/event.js",
       "service_worker/index.js",
+      "signals.js",
       "source_maps/prepare_stack_trace_plain.js",
       "streams.js",
       "task_queue.js",
