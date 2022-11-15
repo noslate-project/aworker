@@ -47,24 +47,45 @@ class SignalWrap : public HandleWrap {
 
     auto prototype_template = tpl->PrototypeTemplate();
     tpl->SetClassName(name);
+    immortal->SetFunctionProperty(prototype_template, "stop", SignalWrap::Stop);
+    immortal->SetFunctionProperty(
+        prototype_template, "raise", SignalWrap::Raise);
+
     exports->Set(context, name, tpl->GetFunction(context).ToLocalChecked())
         .Check();
   }
   static void Init(ExternalReferenceRegistry* registry) {
     registry->Register(SignalWrap::New);
+    registry->Register(SignalWrap::Raise);
+    registry->Register(SignalWrap::Stop);
   }
 
   static AWORKER_METHOD(New) {
     Immortal* immortal = Immortal::GetCurrent(info);
 
-    CHECK(info.Length() == 2 && info[0]->IsInt32() && info[1]->IsFunction());
+    CHECK(info.Length() == 1 && info[0]->IsInt32());
 
     Local<v8::Int32> signal_num = info[0].As<v8::Int32>();
-    Local<Function> cb = info[1].As<Function>();
 
     new SignalWrap(immortal, info.This(), signal_num->Value());
 
     info.GetReturnValue().Set(info.This());
+  }
+
+  static AWORKER_METHOD(Stop) {
+    SignalWrap* wrap;
+    ASSIGN_OR_RETURN_UNWRAP(&wrap, info.This());
+    uv_signal_stop(&wrap->signal_);
+  }
+
+  static AWORKER_METHOD(Raise) {
+    Immortal* immortal = Immortal::GetCurrent(info);
+
+    CHECK(info.Length() == 1 && info[0]->IsInt32());
+
+    Local<v8::Int32> sig_num = info[0].As<v8::Int32>();
+
+    raise(sig_num->Value());
   }
 
   SignalWrap(Immortal* immortal, Local<Object> object, int32_t sig_num)
@@ -82,8 +103,6 @@ class SignalWrap : public HandleWrap {
     auto isolate = handle->immortal()->isolate();
     HandleScope scope(isolate);
 
-    // Timer callback may throw. However those exceptions were routed to global
-    // scope, we don't care about the return value here;
     handle->MakeCallback(handle->immortal()->on_signal_string(), 0, nullptr);
   }
 

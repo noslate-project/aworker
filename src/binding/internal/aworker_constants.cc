@@ -65,6 +65,7 @@ void DefineTraceConstants(Local<Object> target) {
 
 void DefineSignalConstants(Local<Object> target) {
   DEFINE_CONSTANT(target, SIGTERM);
+  DEFINE_CONSTANT(target, SIGINT);
 }
 
 AWORKER_BINDING(Init) {

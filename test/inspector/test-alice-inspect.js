@@ -34,6 +34,7 @@ promise_test(async () => {
   client.reset();
 
   // TODO: proper resource management.
-  shell.cp.kill();
+  // TODO: SIGTERM handler 在断点的情况下没有执行
+  shell.cp.kill('SIGKILL');
   shell.close();
 }, 'should start inspector when dynamically enabled');

@@ -10,7 +10,7 @@ promise_test(async () => {
   });
 
   setTimeout(() => {
-    cp.kill('SIGTERM');
+    cp.kill('SIGINT');
   }, 500);
 
   const result = collectStdout(cp);
@@ -22,4 +22,4 @@ promise_test(async () => {
   });
 
   assert_regexp_match(result.stdout.trim(), /^install,installed,uninstall,uninstalled$/);
-}, 'exit with SIGTERM');
+}, 'exit with SIGINT');
