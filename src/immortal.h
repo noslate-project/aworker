@@ -157,13 +157,13 @@ class KVStore {
   V(message, "message")                                                        \
   V(name, "name")                                                              \
   V(ontimeout, "ontimeout")                                                    \
+  V(on_signal, "onSignal")                                                     \
   V(openssl_error_stack, "opensslErrorStack")                                  \
   V(prepare_stack_trace, "prepareStackTrace")                                  \
   V(run_cleanup_hooks, "runCleanupHooks")                                      \
   V(stack, "stack")                                                            \
   V(strategy, "strategy")                                                      \
-  V(tick_task_queue, "tickTaskQueue")                                          \
-  V(on_signal, "onSignal")
+  V(tick_task_queue, "tickTaskQueue")
 
 #define IMMORTAL_DECLARE_PROPERTY(inner_type, exchange_type, name)             \
  public:                                                                       \

@@ -92,6 +92,7 @@ class SignalWrap : public HandleWrap {
       : HandleWrap(immortal, object, reinterpret_cast<uv_handle_t*>(&signal_)) {
     uv_signal_init(immortal->event_loop(), &signal_);
     uv_signal_start(&signal_, SignalCallback, sig_num);
+    // TODO(liyilong.lyl): unref in JS
     uv_unref(reinterpret_cast<uv_handle_t*>(&signal_));
   }
 

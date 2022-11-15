@@ -9,6 +9,7 @@
 #define BUILTIN_BINDINGS(V)                                                    \
   V(noslated_data_channel)                                                     \
   V(async_wrap)                                                                \
+  V(aworker_options)                                                           \
   V(bytes)                                                                     \
   V(cache)                                                                     \
   V(constants)                                                                 \
@@ -22,15 +23,14 @@
   V(perf)                                                                      \
   V(process)                                                                   \
   V(serdes)                                                                    \
-  V(aworker_options)                                                           \
+  V(signals)                                                                   \
   V(task_queue)                                                                \
   V(timers)                                                                    \
   V(tracing)                                                                   \
   V(types)                                                                     \
   V(url)                                                                       \
   V(v8)                                                                        \
-  V(zlib)                                                                      \
-  V(signals)
+  V(zlib)
 
 #define V(name) void _register_##name();
 BUILTIN_BINDINGS(V)
