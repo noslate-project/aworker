@@ -9,6 +9,7 @@
 #define BUILTIN_BINDINGS(V)                                                    \
   V(noslated_data_channel)                                                     \
   V(async_wrap)                                                                \
+  V(aworker_options)                                                           \
   V(bytes)                                                                     \
   V(cache)                                                                     \
   V(constants)                                                                 \
@@ -22,7 +23,7 @@
   V(perf)                                                                      \
   V(process)                                                                   \
   V(serdes)                                                                    \
-  V(aworker_options)                                                           \
+  V(signals)                                                                   \
   V(task_queue)                                                                \
   V(timers)                                                                    \
   V(tracing)                                                                   \

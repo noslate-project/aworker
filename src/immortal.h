@@ -157,6 +157,7 @@ class KVStore {
   V(message, "message")                                                        \
   V(name, "name")                                                              \
   V(ontimeout, "ontimeout")                                                    \
+  V(on_signal, "onSignal")                                                     \
   V(openssl_error_stack, "opensslErrorStack")                                  \
   V(prepare_stack_trace, "prepareStackTrace")                                  \
   V(run_cleanup_hooks, "runCleanupHooks")                                      \
