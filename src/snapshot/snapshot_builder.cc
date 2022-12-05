@@ -397,8 +397,8 @@ void SnapshotBuilder::Generate(SnapshotData* out,
 }
 
 void SnapshotBuilder::Generate(SnapshotData* out, int argc, char** argv) {
-  aworker::AworkerPlatform platform;
-  v8::V8::InitializePlatform(&platform);
+  AworkerPlatform platform;
+  AworkerPlatform::Scope platform_scope(&platform);
   v8::V8::Initialize();
 
   {
@@ -408,6 +408,5 @@ void SnapshotBuilder::Generate(SnapshotData* out, int argc, char** argv) {
   }
 
   v8::V8::Dispose();
-  v8::V8::DisposePlatform();
 }
 }  // namespace aworker

@@ -260,7 +260,7 @@ AworkerPlatform::Scope::Scope(AworkerPlatform* platform) : platform_(platform) {
 
 AworkerPlatform::Scope::~Scope() {
   aworker::tracing::TraceEventHelper::SetTraceAgent(nullptr);
-  v8::V8::DisposePlatform();
+  v8::V8::ShutdownPlatform();
 }
 
 }  // namespace aworker
