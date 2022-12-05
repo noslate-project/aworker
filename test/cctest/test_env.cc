@@ -13,7 +13,7 @@ void AworkerEnvironment::SetUp() {
 
 void AworkerEnvironment::TearDown() {
   v8::V8::Dispose();
-  v8::V8::DisposePlatform();
+  v8::V8::ShutdownPlatform();
   platform_.reset();
   aworker::TearDownOncePerProcess();
 }
