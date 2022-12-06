@@ -7,5 +7,6 @@
 
   ],
   "check_subdomains": false,
-  "bind_address": false
+  "bind_address": false,
+  "log_level": "debug"
 }
