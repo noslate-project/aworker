@@ -231,7 +231,7 @@ class WPTRunner extends NoslatedAworkerRunner {
       console.log(line);
     });
     for await (const line of readline.createInterface(this.wptHttpd.stderr)) {
-      const matched = line.match(/INFO:web-platform-tests:Starting http server on web-platform.test:(\d+)/);
+      const matched = line.match(/DEBUG:web-platform-tests:Using ports: .*'http': \[(\d+), (\d+)\]/);
       if (matched) {
         this.wptResourceServerAddr = `http://localhost:${matched[1]}`;
         break;
