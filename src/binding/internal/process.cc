@@ -175,6 +175,13 @@ AWORKER_METHOD(SetWorkerState) {
   CHECK(static_cast<uint32_t>(immortal->worker_state()) < val);
   WorkerState state = static_cast<WorkerState>(val);
   immortal->set_worker_state(state);
+
+  // Only stop the loop when the loop is still alive to avoid propagating the
+  // stopping flag to the next run.
+  if (state == WorkerState::kForkPrepared &&
+      uv_loop_alive(immortal->event_loop())) {
+    uv_stop(immortal->event_loop());
+  }
 }
 
 #define METADATA_KEYS(V)                                                       \
