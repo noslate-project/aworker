@@ -18,6 +18,8 @@ using HMACCtxPointer = DeleteFnPtr<HMAC_CTX, HMAC_CTX_free>;
 
 class Hash final : public BaseObject {
   DEFINE_WRAPPERTYPEINFO();
+  SIZE_IN_BYTES(Hash)
+  SET_NO_MEMORY_INFO()
 
  public:
   static void Initialize(Immortal* immortal, v8::Local<v8::Object> target);
@@ -43,6 +45,8 @@ class Hash final : public BaseObject {
 
 class Hmac final : public BaseObject {
   DEFINE_WRAPPERTYPEINFO();
+  SIZE_IN_BYTES(Hmac)
+  SET_NO_MEMORY_INFO()
 
  public:
   static void Initialize(Immortal* immortal, v8::Local<v8::Object> target);

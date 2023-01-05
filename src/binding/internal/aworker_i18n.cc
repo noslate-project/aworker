@@ -33,7 +33,7 @@ using v8::Uint32Array;
 using v8::Uint8Array;
 
 const WrapperTypeInfo ConverterObject::wrapper_type_info_{
-    "convert_object",
+    "converter_object",
 };
 
 ConverterObject::ConverterObject(Immortal* immortal,

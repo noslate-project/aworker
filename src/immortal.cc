@@ -266,6 +266,21 @@ Immortal::~Immortal() {
 #undef V
 }
 
+void Immortal::BuildEmbedderGraph(v8::Isolate* isolate,
+                                  v8::EmbedderGraph* graph,
+                                  void* data) {
+  Immortal* immortal = static_cast<Immortal*>(data);
+  MemoryTracker tracker(isolate, graph);
+
+  tracker.Track(immortal);
+}
+
+void Immortal::MemoryInfo(MemoryTracker* tracker) const {
+  for (auto it : tracked_base_objects) {
+    tracker->Track(it);
+  }
+}
+
 std::vector<size_t> Immortal::Serialize(v8::SnapshotCreator* creator) {
   CHECK_EQ(isolate_, creator->GetIsolate());
   std::vector<size_t> indexes;
@@ -481,6 +496,8 @@ void Immortal::ExhaustInterruptRequests() {
 
 void Immortal::InitializeIsolate() {
   isolate_->SetMicrotasksPolicy(v8::MicrotasksPolicy::kExplicit);
+  isolate_->GetHeapProfiler()->AddBuildEmbedderGraphCallback(BuildEmbedderGraph,
+                                                             this);
 }
 
 void Immortal::InitializeDefaultContext() {

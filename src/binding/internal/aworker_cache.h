@@ -34,6 +34,8 @@ struct CallbackWrap {
 
 class CacheStorage : public AsyncWrap {
   DEFINE_WRAPPERTYPEINFO();
+  SIZE_IN_BYTES(CacheStorage)
+  SET_NO_MEMORY_INFO()
 
  public:
   CacheStorage(Immortal* immortal, v8::Local<v8::Object> object);

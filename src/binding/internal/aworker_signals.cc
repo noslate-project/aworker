@@ -29,6 +29,8 @@ using v8::Value;
 
 class SignalWrap : public HandleWrap {
   DEFINE_WRAPPERTYPEINFO();
+  SIZE_IN_BYTES(SignalWrap)
+  SET_NO_MEMORY_INFO()
 
  public:
   static void Init(Local<Object> exports) {

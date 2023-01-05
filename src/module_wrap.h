@@ -10,6 +10,8 @@ namespace aworker {
 
 class ModuleWrap : public BaseObject {
   DEFINE_WRAPPERTYPEINFO();
+  SIZE_IN_BYTES(ModuleWrap)
+  SET_NO_MEMORY_INFO()
 
  public:
   static v8::MaybeLocal<v8::Promise>

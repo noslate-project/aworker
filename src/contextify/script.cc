@@ -26,7 +26,7 @@ using v8::UnboundScript;
 using v8::Value;
 
 const WrapperTypeInfo ScriptWrap::wrapper_type_info_{
-    "script_wrap_name",
+    "script_wrap",
 };
 
 ScriptWrap::ScriptWrap(Immortal* immortal,

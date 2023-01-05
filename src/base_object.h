@@ -1,6 +1,8 @@
-#pragma once
+#ifndef SRC_BASE_OBJECT_H_
+#define SRC_BASE_OBJECT_H_
 
 #include <type_traits>  // std::remove_reference
+#include "memory_tracker.h"
 #include "v8.h"
 
 namespace aworker {
@@ -63,7 +65,7 @@ struct WrapperTypeInfo final {
     object()->SetInternalField(id, ptr->object());                             \
   }
 
-class BaseObject {
+class BaseObject : public MemoryRetainer {
  public:
   enum InternalFields { kSlot, kInternalFieldCount };
 
@@ -120,6 +122,10 @@ class BaseObject {
 
   // TODO(chengzhong.wcz): Transferable object.
 
+  // MemoryInfo
+  inline const char* MemoryInfoName() const override;
+  inline v8::Local<v8::Object> WrappedObject() const override;
+
  private:
   v8::Global<v8::Object> persistent_;
   Immortal* immortal_;
@@ -147,3 +153,5 @@ inline T* Unwrap(v8::Local<v8::Value> obj) {
 }  // namespace aworker
 
 #include "base_object-inl.h"
+
+#endif  // SRC_BASE_OBJECT_H_

@@ -1,5 +1,6 @@
 #include <cwalk.h>
 #include <v8-profiler.h>
+#include <sstream>
 
 #include "aworker_binding.h"
 #include "error_handling.h"
@@ -12,12 +13,13 @@ using v8::HeapSnapshot;
 using v8::Integer;
 using v8::Isolate;
 using v8::Local;
+using v8::MaybeLocal;
 using v8::String;
 
 namespace {
 class FileOutputStream : public v8::OutputStream {
  public:
-  explicit FileOutputStream(FILE* stream) : _stream(stream) {}
+  explicit FileOutputStream(FILE* stream) : stream_(stream) {}
 
   int GetChunkSize() override { return 65536; }
 
@@ -27,14 +29,34 @@ class FileOutputStream : public v8::OutputStream {
     const size_t len = static_cast<size_t>(size);
     size_t off = 0;
 
-    while (off < len && !feof(_stream) && !ferror(_stream))
-      off += fwrite(data + off, 1, len - off, _stream);
+    while (off < len && !feof(stream_) && !ferror(stream_))
+      off += fwrite(data + off, 1, len - off, stream_);
 
     return off == len ? kContinue : kAbort;
   }
 
  private:
-  FILE* _stream;
+  FILE* stream_;
+};
+
+class StringOutputStream : public v8::OutputStream {
+ public:
+  StringOutputStream() {}
+
+  void EndOfStream() override { ended_ = true; }
+
+  WriteResult WriteAsciiChunk(char* data, int size) override {
+    stream_.write(data, size);
+    return kContinue;
+  }
+
+  MaybeLocal<String> GetString(Isolate* isolate) {
+    return v8::String::NewFromUtf8(isolate, stream_.str().c_str());
+  }
+
+ private:
+  std::ostringstream stream_;
+  bool ended_ = false;
 };
 
 void DeleteHeapSnapshot(const HeapSnapshot* snapshot) {
@@ -75,6 +97,25 @@ AWORKER_METHOD(WriteHeapSnapshot) {
   fp = nullptr;
 }
 
+AWORKER_METHOD(GetHeapSnapshot) {
+  Immortal* immortal = Immortal::GetCurrent(info);
+  Isolate* isolate = immortal->isolate();
+  HandleScope scope(isolate);
+
+  HeapSnapshotPointer snapshot{isolate->GetHeapProfiler()->TakeHeapSnapshot()};
+  if (!snapshot) {
+    ThrowException(isolate, "Fail to create heapsnapshot due to low memory.");
+    return;
+  }
+
+  StringOutputStream stream;
+  snapshot->Serialize(&stream, HeapSnapshot::kJSON);
+  Local<String> result;
+  if (stream.GetString(isolate).ToLocal(&result)) {
+    info.GetReturnValue().Set(result);
+  }
+}
+
 // TODO(kaidi.zkd): remove me.
 AWORKER_METHOD(GetTotalHeapSize) {
   Immortal* immortal = Immortal::GetCurrent(info);
@@ -91,12 +132,14 @@ AWORKER_METHOD(GetTotalHeapSize) {
 AWORKER_BINDING(Init) {
   immortal->SetFunctionProperty(
       exports, "writeHeapSnapshot", WriteHeapSnapshot);
+  immortal->SetFunctionProperty(exports, "getHeapSnapshot", GetHeapSnapshot);
 
   immortal->SetFunctionProperty(exports, "getTotalHeapSize", GetTotalHeapSize);
 }
 
 AWORKER_EXTERNAL_REFERENCE(Init) {
   registry->Register(WriteHeapSnapshot);
+  registry->Register(GetHeapSnapshot);
   registry->Register(GetTotalHeapSize);
 }
 

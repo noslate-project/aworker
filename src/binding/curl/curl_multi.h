@@ -17,6 +17,9 @@ class CurlEasy;
 // https://curl.se/libcurl/c/multi-uv.html
 class CurlMulti : public AsyncWrap {
   DEFINE_WRAPPERTYPEINFO();
+  SIZE_IN_BYTES(CurlMulti)
+  SET_NO_MEMORY_INFO()
+
   AWORKER_DISALLOW_ASSIGN_COPY(CurlMulti);
 
  public:

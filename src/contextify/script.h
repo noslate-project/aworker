@@ -19,7 +19,9 @@ class ScriptWrap : public BaseObject {
   static AWORKER_METHOD(New);
   static AWORKER_METHOD(CreateCachedData);
 
- public:
+  SIZE_IN_BYTES(ScriptWrap)
+  SET_NO_MEMORY_INFO()
+
   inline v8::Local<v8::UnboundScript> script() {
     return PersistentToLocal::Strong(script_);
   }
