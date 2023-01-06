@@ -15,6 +15,8 @@ enum class UnzipFirstTwoBytesParsedStatus {
 
 class UnzipWrapper : public ZlibWrapper {
   DEFINE_WRAPPERTYPEINFO();
+  SIZE_IN_BYTES(UnzipWrapper)
+  SET_NO_MEMORY_INFO()
 
  public:
   static int TypeEnumMax() {

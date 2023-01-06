@@ -10,6 +10,8 @@ namespace curl {
 
 class CurlEasy : public AsyncWrap {
   DEFINE_WRAPPERTYPEINFO();
+  SIZE_IN_BYTES(CurlEasy)
+  SET_NO_MEMORY_INFO()
 
  public:
   static AWORKER_BINDING(Initialize);

@@ -10,6 +10,8 @@ enum class ZipType { GZIP = 0, DEFLATE, ZIP_TYPE_MAX };
 
 class ZipWrapper : public ZlibWrapper {
   DEFINE_WRAPPERTYPEINFO();
+  SIZE_IN_BYTES(ZipWrapper)
+  SET_NO_MEMORY_INFO()
 
  public:
   static int TypeEnumMax() { return static_cast<int>(ZipType::ZIP_TYPE_MAX); }

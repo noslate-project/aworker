@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SRC_BASE_OBJECT_INL_H_
+#define SRC_BASE_OBJECT_INL_H_
 
 #include "base_object.h"
 #include "immortal.h"
@@ -112,4 +113,14 @@ void BaseObject::OnGCCollect() {
   delete this;
 }
 
+const char* BaseObject::MemoryInfoName() const {
+  return GetWrapperTypeInfo()->interface_name;
+}
+
+v8::Local<v8::Object> BaseObject::WrappedObject() const {
+  return object();
+}
+
 }  // namespace aworker
+
+#endif  // SRC_BASE_OBJECT_INL_H_

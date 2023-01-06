@@ -23,6 +23,8 @@ using v8::Value;
 
 class ConverterObject : public SnapshotableObject {
   DEFINE_WRAPPERTYPEINFO();
+  SIZE_IN_BYTES(ConverterObject)
+  SET_NO_MEMORY_INFO()
 
  public:
   enum InternalFields {

@@ -22,6 +22,8 @@ enum ExecutionFlags {
 
 class ContextWrap : public BaseObject {
   DEFINE_WRAPPERTYPEINFO();
+  SIZE_IN_BYTES(ContextWrap)
+  SET_NO_MEMORY_INFO()
 
  public:
   ContextWrap(Immortal* immortal,

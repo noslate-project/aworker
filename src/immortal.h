@@ -11,6 +11,7 @@
 #include <unordered_map>
 
 #include "macro_task_queue.h"
+#include "memory_tracker.h"
 #include "util.h"
 #include "utils/async_primitives.h"
 #include "utils/singleton.h"
@@ -203,7 +204,7 @@ class IsolateData {
   v8::Isolate* isolate_;
 };
 
-class Immortal {
+class Immortal : public MemoryRetainer {
  public:
   using V8RawFunction = void (*)(const v8::FunctionCallbackInfo<v8::Value>&);
   using V8RawGetter = void (*)(v8::Local<v8::Name>,
@@ -238,6 +239,9 @@ class Immortal {
       const v8::FunctionCallbackInfo<v8::Value>& info);
   template <typename T>
   static inline Immortal* GetCurrent(const v8::PropertyCallbackInfo<T>& info);
+  static void BuildEmbedderGraph(v8::Isolate* isolate,
+                                 v8::EmbedderGraph* graph,
+                                 void* data);
 
   Immortal(uv_loop_t* loop,
            CommandlineParserGroup* options,
@@ -245,6 +249,10 @@ class Immortal {
            IsolateData* isolate_data,
            const std::vector<size_t>* indexes);
   ~Immortal();
+
+  MEMORY_INFO_NAME(Immortal)
+  SIZE_IN_BYTES(Immortal)
+  void MemoryInfo(MemoryTracker* tracker) const override;
 
   std::vector<size_t> Serialize(v8::SnapshotCreator* creator);
   void Deserialize(const std::vector<size_t>* indexes);
