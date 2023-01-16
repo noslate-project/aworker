@@ -13,6 +13,7 @@ const help = `Usage: shell.js <script filename>
 const fs = require('fs');
 const path = require('path');
 const childProcess = require('child_process');
+const { once } = require('events');
 
 class NoslatedAworkerShell {
   agentModulePath;
@@ -83,6 +84,14 @@ class NoslatedAworkerShell {
     });
 
     return cp;
+  }
+
+  waitForBind() {
+    return once(this.agent, 'bind');
+  }
+
+  async invoke(data, metadata) {
+    return this.agent.trigger(this.credential, 'invoke', data, metadata);
   }
 
   async startNoslatedAgent() {

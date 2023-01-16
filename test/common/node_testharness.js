@@ -99,6 +99,14 @@ function sleepMaybe(ms) {
   });
 }
 
+async function streamToBuffer(readable) {
+  const bufs = [];
+  for await (const chunk of readable) {
+    bufs.push(chunk);
+  }
+  return Buffer.concat(bufs);
+}
+
 async function spawnAworkerWithAgent2(argv, options) {
   const shell = new NoslatedAworkerShell({
     agentModulePath: resolveNoslated(),
@@ -108,7 +116,7 @@ async function spawnAworkerWithAgent2(argv, options) {
   });
 
   await shell.startNoslatedAgent();
-  if (options.startInspectorServer) {
+  if (options?.startInspectorServer) {
     await shell.startInspectorServer();
   }
 
@@ -138,6 +146,7 @@ module.exports = {
 
   sleep,
   sleepMaybe,
+  streamToBuffer,
 
   setupResourceServer,
 };
