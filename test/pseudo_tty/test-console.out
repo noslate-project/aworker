@@ -1,0 +1,4 @@
+Trace: I am here
+    at foo *
+    at bar *
+    at *test-console.js:10:1
