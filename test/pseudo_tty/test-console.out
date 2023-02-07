@@ -2,9 +2,3 @@ Trace: I am here
     at foo *
     at bar *
     at *test-console.js:10:1
-    at internal:loader/script.js:39:63
-    at traceEvent (internal:console/debuglog.js:39:15)
-    at loadScript (internal:loader/script.js:39:3)
-    at Object.runMain (internal:loader/script.js:24:5)
-    at main (internal:bootstrap/main.js:30:25)
-    at internal:bootstrap/main.js:41:1
