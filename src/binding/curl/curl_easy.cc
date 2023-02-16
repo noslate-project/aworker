@@ -1,4 +1,5 @@
 #include "binding/curl/curl_easy.h"
+#include <ares.h>
 #include "error_handling.h"
 #include "utils/resizable_buffer.h"
 
@@ -159,6 +160,10 @@ CurlEasy::CurlEasy(Immortal* immortal, Local<Object> obj)
   blob.flags = CURL_BLOB_COPY;
   curl_easy_setopt(easy_handle_, CURLOPT_CAINFO_BLOB, &blob);
 
+  curl_easy_setopt(easy_handle_, CURLOPT_RESOLVER_START_DATA, this);
+  curl_easy_setopt(
+      easy_handle_, CURLOPT_RESOLVER_START_FUNCTION, OnResolverStart);
+
   curl_easy_setopt(easy_handle_, CURLOPT_HEADERDATA, this);
   curl_easy_setopt(easy_handle_, CURLOPT_HEADERFUNCTION, OnHeader);
 
@@ -183,6 +188,25 @@ void CurlEasy::OnDone(CURLcode code) {
       v8::Uint32::New(isolate(), code),
   };
   MakeCallback(OneByteString(isolate(), "_onDone"), arraysize(argv), argv);
+}
+
+// static
+int CurlEasy::OnResolverStart(void* resolver_state,
+                              void* reserved,
+                              void* userdata) {
+  CurlEasy* ce = static_cast<CurlEasy*>(userdata);
+  ares_channel* resolver = static_cast<ares_channel*>(resolver_state);
+
+  struct ares_options options;
+  memset(&options, 0, sizeof(options));
+  int optmask = ARES_OPT_FLAGS;
+  options.flags = ARES_FLAG_NOCHECKRESP;
+
+  int status = ares_init_options(resolver, &options, optmask);
+  if (status != ARES_SUCCESS) {
+    return CURLE_FAILED_INIT;
+  }
+  return CURLE_OK;
 }
 
 // static

@@ -14,6 +14,7 @@
         'curl_version.cc',
       ],
       'dependencies': [
+        '<(noslate_cares_gyp):cares',
         '<(noslate_build_dir)/gypfiles/curl.gyp:libcurl',
       ],
     },

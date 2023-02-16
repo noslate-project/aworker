@@ -27,6 +27,9 @@ class CurlEasy : public AsyncWrap {
   void OnDone(CURLcode code);
 
  private:
+  static int OnResolverStart(void* resolver_state,
+                             void* reserved,
+                             void* userdata);
   static size_t OnHeader(char* buffer,
                          size_t size,
                          size_t nitems,

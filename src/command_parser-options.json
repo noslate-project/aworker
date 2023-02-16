@@ -87,6 +87,10 @@
       "meta": "<CRED>",
       "desc": "the agent credential"
     },
+    "dns-servers": {
+      "meta": "<LIST>",
+      "desc": "the list of DNS servers to be used instead of the system default, in the format of host[:port][,host[:port]]"
+    },
     "location": {
       "meta": "<HREF>",
       "desc": "value of 'globalThis.location' used by some web APIs"
