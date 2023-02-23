@@ -155,6 +155,7 @@
       'lib/performance/utils.js',
       'lib/process/execution.js',
       'lib/process/methods.js',
+      'lib/service_worker/baggages.js',
       'lib/service_worker/event.js',
       'lib/service_worker/index.js',
       'lib/signals.js',
