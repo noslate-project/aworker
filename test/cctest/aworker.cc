@@ -138,6 +138,7 @@ TEST(Aworker, InitializeAndBootstrap) {
       "performance/user_timing.js",
       "performance/utils.js",
       "process/execution.js",
+      "service_worker/baggages.js",
       "service_worker/event.js",
       "service_worker/index.js",
       "signals.js",
