@@ -22,6 +22,7 @@ extern "C" {
 #include "debug_utils.h"
 #include "immortal.h"
 #include "inspector/inspector_agent.h"
+#include "libc_override.h"
 #include "native_module_manager.h"
 #include "snapshot/embedded_snapshot_data.h"
 #include "snapshot/snapshot_builder.h"
@@ -203,6 +204,7 @@ void AworkerMainInstance::WarmFork() {
   int rc = 0;
 
   TURF_PHD(turf_fork_wait, &rc, &argc, &argv);
+  libc_override::RunChildHooks();
   RefreshTimeOrigin();
   RefreshLogLevel();
   per_process::enabled_debug_list.Parse();
