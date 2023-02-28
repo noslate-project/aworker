@@ -25,6 +25,7 @@ namespace aworker {
   V(MACRO_TASK_QUEUE)                                                          \
   V(MKSNAPSHOT)                                                                \
   V(NATIVE_MODULE)                                                             \
+  V(OVERRIDE)                                                                  \
   V(PLATFORM)                                                                  \
   V(PERFORMANCE)                                                               \
   V(TRACING)                                                                   \
