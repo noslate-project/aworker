@@ -198,6 +198,9 @@
       }],
       ['OS=="mac"', {
         'aworker_obj_dir': '<(PRODUCT_DIR)',
+        'aworker_source_files': [
+          'src/libc_override_darwin.cc',
+        ],
       }],
       ['OS=="linux"', {
         'aworker_source_files': [

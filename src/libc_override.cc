@@ -1,3 +1,4 @@
+#include "libc_override.h"
 #include <debug_utils-inl.h>
 #include <sys/syscall.h>
 #include <unistd.h>
