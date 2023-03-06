@@ -153,6 +153,7 @@
       'lib/performance/performance_entry.js',
       'lib/performance/performance.js',
       'lib/performance/user_timing.js',
+      'lib/performance/resource_timing.js',
       'lib/performance/utils.js',
       'lib/process/execution.js',
       'lib/process/methods.js',
