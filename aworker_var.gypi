@@ -34,6 +34,7 @@
       'src/binding/internal/aworker_crypto.cc',
       'src/binding/internal/aworker_file.cc',
       'src/binding/internal/aworker_i18n.cc',
+      'src/binding/internal/aworker_immediate.cc',
       'src/binding/internal/aworker_perf.cc',
       'src/binding/internal/aworker_serdes.cc',
       'src/binding/internal/aworker_signals.cc',

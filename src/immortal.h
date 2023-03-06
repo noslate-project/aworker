@@ -157,6 +157,7 @@ class KVStore {
   V(mem_level, "memLevel")                                                     \
   V(message, "message")                                                        \
   V(name, "name")                                                              \
+  V(onimmediate, "onimmediate")                                                \
   V(ontimeout, "ontimeout")                                                    \
   V(on_signal, "onSignal")                                                     \
   V(openssl_error_stack, "opensslErrorStack")                                  \
