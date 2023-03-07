@@ -90,12 +90,16 @@ class ImmediateWrap : public HandleWrap {
       : HandleWrap(immortal, object, reinterpret_cast<uv_handle_t*>(&check)) {
     uv_check_init(immortal->event_loop(), &check);
     uv_idle_init(immortal->event_loop(), &idle);
-    idle.data = reinterpret_cast<void*>(0x10012);
     uv_idle_start(&idle, [](uv_idle_t* idle) { /* idling */ });
     uv_check_start(&check, TriggerImmediate);
   }
 
   ~ImmediateWrap() = default;
+
+  void Close(Local<Value> close_callback) override {
+    HandleWrap::Close(close_callback);
+    uv_close(reinterpret_cast<uv_handle_t*>(&idle), [](uv_handle_t* handle) {});
+  }
 
  private:
   static void TriggerImmediate(uv_check_t* check) {
@@ -106,11 +110,6 @@ class ImmediateWrap : public HandleWrap {
 
     uv_idle_stop(&handle->idle);
     uv_check_stop(&handle->check);
-
-    // uv_close(reinterpret_cast<uv_handle_t*>(&handle->check),
-    //          [](uv_handle_t* handle0) {});
-    // uv_close(reinterpret_cast<uv_handle_t*>(&handle->idle),
-    //          [](uv_handle_t* handle1) {});
   }
 
   uv_check_t check;
