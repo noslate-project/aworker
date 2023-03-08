@@ -68,7 +68,7 @@ async function main(argv = []) {
     if (found == null) {
       throw new Error('Spec not found');
     }
-    specs = [found];
+    specs = [ found ];
   }
 
   const failures = [];

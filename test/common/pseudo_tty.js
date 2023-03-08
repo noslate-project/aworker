@@ -11,7 +11,7 @@ function run(args) {
 
   require('./node_testharness');
 
-  promise_test(async function () {
+  promise_test(async function() {
     const filepath = args[0];
     const dirname = path.dirname(filepath);
     const basename = path.basename(filepath, '.js');
@@ -25,7 +25,7 @@ function run(args) {
     expected = trimString(expected);
 
     const actual = await new Promise(resolve => {
-      const child = cp.spawn(fixtures.path('product', 'aworker'), [...aworkerArgs, filepath], {
+      const child = cp.spawn(fixtures.path('product', 'aworker'), [ ...aworkerArgs, filepath ], {
         env: process.env,
         stdio: 'pipe',
       });

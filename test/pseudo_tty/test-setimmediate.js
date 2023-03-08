@@ -1,9 +1,11 @@
+'use strict';
+
 const { setImmediate, clearImmediate } = load('timer');
 
 setImmediate((...args) => { console.log(...args); }, '3', '3');
-const id = setImmediate(() => { console.log("unreachable"); });
+const id = setImmediate(() => { console.log('will never print'); });
 
-console.log("1");
+console.log('1');
 
 Promise.resolve().then(() => console.log('2'));
 
