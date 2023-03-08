@@ -1,9 +1,10 @@
-const { setImmediate } = load('timer');
+const { setImmediate, clearImmediate } = load('timer');
 
-setImmediate(() => { console.log("𒐕𒐕𒐕"); });
+setImmediate((...args) => { console.log(...args); }, '3', '3');
+const id = setImmediate(() => { console.log("unreachable"); });
 
-console.log("𒐕");
+console.log("1");
 
-setTimeout(() => {
-  console.log("𒐕𒐕");
-}, 0);
+Promise.resolve().then(() => console.log('2'));
+
+clearImmediate(id);
