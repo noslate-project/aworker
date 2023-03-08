@@ -10,5 +10,5 @@ promise_test(async () => {
   assert_true(!isNaN(parseFloat(instance_1.stdout)));
   assert_true(!isNaN(parseFloat(instance_2.stdout)));
 
-  assert_true(instance_1.stdout != instance_2.stdout);
+  assert_true(instance_1.stdout !== instance_2.stdout);
 }, 'performance.timeOrigin between aworker instance');
