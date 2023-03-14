@@ -259,7 +259,6 @@ class WPTRunner extends NoslatedAworkerRunner {
     const idlHarnessPath = fixtures.path('wpt', 'resources', 'idlharness.js');
     const harnessCode = fs.readFileSync(harnessPath, 'utf8');
     const idlHarnessCode = harnessCode + '\n' + fs.readFileSync(idlHarnessPath, 'utf8');
-
     const preloadCode = preloadTemplateCode
       .replace('/** __WPT_HARNESS_CODE__ */', ';' + (spec.filename.startsWith('idlharness') ? idlHarnessCode : harnessCode))
       .replace('/** __WPT_SCRIPTS_TO_RUN */', `${scriptsToRun.map(it => {

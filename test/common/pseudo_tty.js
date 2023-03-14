@@ -16,11 +16,7 @@ function run(args) {
     const dirname = path.dirname(filepath);
     const basename = path.basename(filepath, '.js');
     const outFilepath = path.join(dirname, `${basename}.out`);
-    const cfgFilePath = path.join(dirname, `${basename}.cfg.json`);
-    let aworkerArgs = [];
-    if (fs.existsSync(cfgFilePath)) {
-      aworkerArgs = require(cfgFilePath).args;
-    }
+    const aworkerArgs = [ ...args.slice(1) ];
     let expected = await fsPromise.readFile(outFilepath, 'utf8');
     expected = trimString(expected);
 
@@ -72,11 +68,16 @@ function assert_match(actual, expected) {
 
 class PseudoTtyRunner extends NodeRunner {
   run(spec/* , scriptsToRun */) {
+    const aworkerArgs = [];
+    if (spec.meta.flags) {
+      aworkerArgs.push(...spec.meta.flags.split(' '));
+    }
     return super.spawn(spec.filename, fixtures.path('product', 'node'), [
       ...this.execArgv,
       __filename,
       'child',
       spec.getAbsolutePath(),
+      ...aworkerArgs,
     ], {
       env: { ...process.env, ...spec.meta.env },
     });

@@ -1,3 +1,4 @@
+// META: flags=--expose-internals
 'use strict';
 
 const { setImmediate, clearImmediate } = load('timer');
