@@ -67,7 +67,7 @@ class ImmediateWrap : public HandleWrap {
     auto context = immortal->context();
     HandleScope scope(isolate);
 
-    CHECK_EQ(info.Length() == 0);
+    CHECK_EQ(info.Length(), 0);
 
     new ImmediateWrap(immortal, info.This());
 

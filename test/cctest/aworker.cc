@@ -89,6 +89,7 @@ TEST(Aworker, InitializeAndBootstrap) {
       "aworker_options",
       "task_queue",
       "timers",
+      "immediate",
       "tracing",
       "types",
       "url",
