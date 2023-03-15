@@ -6,7 +6,6 @@ const fixtures = require('./fixtures');
 function run(args) {
   const cp = require('child_process');
   const fs = require('fs');
-  const fsPromise = fs.promises;
   const path = require('path');
 
   require('./node_testharness');
@@ -16,12 +15,11 @@ function run(args) {
     const dirname = path.dirname(filepath);
     const basename = path.basename(filepath, '.js');
     const outFilepath = path.join(dirname, `${basename}.out`);
-    const aworkerArgs = [ ...args.slice(1) ];
-    let expected = await fsPromise.readFile(outFilepath, 'utf8');
+    let expected = await fs.readFile(outFilepath, 'utf8');
     expected = trimString(expected);
 
     const actual = await new Promise(resolve => {
-      const child = cp.spawn(fixtures.path('product', 'aworker'), [ ...aworkerArgs, filepath ], {
+      const child = cp.spawn(fixtures.path('product', 'aworker'), [ filepath ], {
         env: process.env,
         stdio: 'pipe',
       });
@@ -38,7 +36,7 @@ function run(args) {
     try {
       assert_match(trimString(actual), expected);
     } catch (e) {
-      await fsPromise.writeFile(path.join(dirname, `${basename}.actual`), actual, 'utf8');
+      await fs.writeFile(path.join(dirname, `${basename}.actual`), actual, 'utf8');
       throw e;
     }
   }, 'pseudo-tty test');
