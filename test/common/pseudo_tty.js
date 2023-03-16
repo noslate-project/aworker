@@ -5,7 +5,7 @@ const fixtures = require('./fixtures');
 
 function run(args) {
   const cp = require('child_process');
-  const fs = require('fs');
+  const fs = require('fs').promises;
   const path = require('path');
 
   require('./node_testharness');
@@ -19,7 +19,7 @@ function run(args) {
     expected = trimString(expected);
 
     const actual = await new Promise(resolve => {
-      const child = cp.spawn(fixtures.path('product', 'aworker'), [ filepath ], {
+      const child = cp.spawn(fixtures.path('product', 'aworker'), [ ...args.slice(1), filepath ], {
         env: process.env,
         stdio: 'pipe',
       });
