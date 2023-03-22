@@ -1,5 +1,6 @@
 #include "binding/curl/curl_version.h"
 
+#include <curl/curl.h>
 #include "immortal.h"
 
 namespace aworker {
@@ -47,6 +48,10 @@ void SetObjPropertyToNullOrValue<const char*>(Immortal* immortal,
     immortal->SetValueProperty(
         obj, key, v8::String::NewFromUtf8(isolate, value).ToLocalChecked());
   }
+}
+
+const char* CurlVersions::get_version() {
+  return curl_version();
 }
 
 const std::vector<CurlVersions::feature> CurlVersions::features = {

@@ -92,7 +92,7 @@ function _validateContent(report, fields = []) {
   assert.strictEqual(header.arch, os.arch());
   assert.strictEqual(header.platform, os.platform());
 
-  const componentVersionsFields = [ 'aworker', 'v8', 'uv', 'zlib' ];
+  const componentVersionsFields = [ 'ada', 'aworker', 'curl', 'v8', 'uv', 'zlib' ];
   assert.strictEqual(typeof header.componentVersions, 'object');
   checkForUnknownFields(header.componentVersions, componentVersionsFields);
 
