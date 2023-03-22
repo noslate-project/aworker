@@ -5,7 +5,9 @@
 namespace aworker {
 
 #define AWORKER_VERSIONS_KEYS(V)                                               \
+  V(ada)                                                                       \
   V(aworker)                                                                   \
+  V(curl)                                                                      \
   V(v8)                                                                        \
   V(uv)                                                                        \
   V(zlib)

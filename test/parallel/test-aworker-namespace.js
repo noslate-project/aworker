@@ -34,3 +34,10 @@ test(() => {
 test(() => {
   assert_regexp_match(aworker.version, /v\d+\.\d+\.\d+(?:-[0-9a-f]{6})?/);
 }, 'AworkerNamespace.version');
+
+test(() => {
+  assert_equals(typeof aworker.versions, 'object');
+  for (const key of Object.keys(aworker.versions)) {
+    assert_equals(typeof aworker.versions[key], 'string');
+  }
+}, 'AworkerNamespace.versions');

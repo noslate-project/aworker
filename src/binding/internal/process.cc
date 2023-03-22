@@ -6,6 +6,7 @@
 #include "command_parser.h"
 #include "error_handling.h"
 #include "immortal.h"
+#include "metadata.h"
 #include "uv.h"
 
 using v8::Array;
@@ -188,16 +189,6 @@ AWORKER_METHOD(SetWorkerState) {
   V(AWORKER_PLATFORM, platform)                                                \
   V(AWORKER_ARCH, arch)                                                        \
   V(AWORKER_VERSION, version)
-#define V(VAL, KEY)                                                            \
-  AWORKER_GETTER(Get##KEY) {                                                   \
-    Immortal* immortal = Immortal::GetCurrent(info);                           \
-    Isolate* isolate = immortal->isolate();                                    \
-    HandleScope scope(isolate);                                                \
-    Local<String> val = String::NewFromUtf8(isolate, VAL).ToLocalChecked();    \
-    info.GetReturnValue().Set(val);                                            \
-  }
-METADATA_KEYS(V)
-#undef V
 
 #define ImmortalFunctions(V)                                                   \
   V(async_wrap_init_function, asyncWrapInitFunction)                           \
@@ -236,8 +227,30 @@ AWORKER_BINDING(Init) {
 
   immortal->SetFunctionProperty(exports, "setWorkerState", SetWorkerState);
 
-#define V(VAL, KEY) immortal->SetAccessor(exports, #KEY, Get##KEY);
+  Isolate* isolate = immortal->isolate();
+
+#define V(VAL, KEY)                                                            \
+  exports                                                                      \
+      ->Set(context,                                                           \
+            String::NewFromUtf8(isolate, #KEY).ToLocalChecked(),               \
+            String::NewFromUtf8(isolate, VAL).ToLocalChecked())                \
+      .ToChecked();
   METADATA_KEYS(V)
+#undef V
+
+  Local<String> versions_string =
+      OneByteString(immortal->isolate(), "versions");
+  Local<Object> versions = Object::New(isolate);
+  exports->Set(context, versions_string, versions).ToChecked();
+
+#define V(key)                                                                 \
+  versions                                                                     \
+      ->Set(context,                                                           \
+            String::NewFromUtf8(isolate, #key).ToLocalChecked(),               \
+            String::NewFromUtf8(isolate, per_process::metadata.key.c_str())    \
+                .ToLocalChecked())                                             \
+      .ToChecked();
+  AWORKER_VERSIONS_KEYS(V)
 #undef V
 
 #define V(IT, NAME)                                                            \
@@ -246,11 +259,10 @@ AWORKER_BINDING(Init) {
   ImmortalFunctions(V);
 #undef V
 
-  Local<String> env_string = aworker::OneByteString(immortal->isolate(), "env");
+  Local<String> env_string = OneByteString(immortal->isolate(), "env");
   Local<Object> env_var_proxy =
-      CreateEnvVarProxy(immortal->context(), immortal->isolate())
-          .ToLocalChecked();
-  exports->Set(immortal->context(), env_string, env_var_proxy).ToChecked();
+      CreateEnvVarProxy(context, immortal->isolate()).ToLocalChecked();
+  exports->Set(context, env_string, env_var_proxy).ToChecked();
 }
 
 AWORKER_EXTERNAL_REFERENCE(Init) {
@@ -264,10 +276,6 @@ AWORKER_EXTERNAL_REFERENCE(Init) {
   registry->Register(WriteStdxxx);
   registry->Register(IsATTY);
   registry->Register(SetWorkerState);
-
-#define V(VAL, KEY) registry->Register(Get##KEY);
-  METADATA_KEYS(V)
-#undef V
 
 #define V(IT, NAME)                                                            \
   registry->Register(GetImmortalFunction##IT);                                 \
