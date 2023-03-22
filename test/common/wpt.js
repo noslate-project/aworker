@@ -8,6 +8,7 @@ const path = require('path');
 const fixtures = require('./fixtures');
 const { StatusRuleSet } = require('./runner');
 const { NoslatedAworkerRunner } = require('./agent-runner');
+const { once } = require('events');
 
 class ResourceLoader {
   toRealFilePath(from, url) {
@@ -145,53 +146,11 @@ class StatusLoader {
   }
 }
 
-class WPTRunner extends NoslatedAworkerRunner {
+class WptHttpd {
   wptHttpd;
   wptResourceServerAddr = 'http://localhost:8000';
-  constructor() {
-    super('wpt', {
-      resource: new ResourceLoader(),
-      status: new StatusLoader(),
-    });
-  }
 
-  load() {
-    this.status.load();
-    this.specMap = new Map(
-      this.status.specs.map(item => [ item.getRelativePath(), item ])
-    );
-  }
-
-  async runJsTests(queue) {
-    if (this.specMap === undefined) {
-      this.load();
-    }
-    if (queue) {
-      queue = this.buildCategorizedQueue(queue);
-      if (queue.length === 0) {
-        throw new Error('No tests found');
-      }
-    }
-    await this.startWptTestHttpd();
-    const ret = await super.runJsTests(queue);
-    await this.closeWptTestHttpd();
-    return ret;
-  }
-
-  buildCategorizedQueue(queue) {
-    const result = new Set();
-    for (const item of queue) {
-      const matcher = new RegExp(item);
-      for (const file of this.specMap.keys()) {
-        if (matcher.test(file)) {
-          result.add(file);
-        }
-      }
-    }
-    return [ ...result ];
-  }
-
-  async startWptTestHttpd() {
+  async start() {
     if (this.wptHttpd) {
       return;
     }
@@ -239,12 +198,59 @@ class WPTRunner extends NoslatedAworkerRunner {
     }
   }
 
-  closeWptTestHttpd() {
+  close() {
     if (this.wptHttpd == null) {
       return;
     }
     console.log('[wpt] shutting down wpt httpd...');
     this.wptHttpd.kill();
+    return once(this.wptHttpd, 'exit');
+  }
+}
+
+class WPTRunner extends NoslatedAworkerRunner {
+  wptHttpd = new WptHttpd();
+  constructor() {
+    super('wpt', {
+      resource: new ResourceLoader(),
+      status: new StatusLoader(),
+    });
+  }
+
+  load() {
+    this.status.load();
+    this.specMap = new Map(
+      this.status.specs.map(item => [ item.getRelativePath(), item ])
+    );
+  }
+
+  async runJsTests(queue) {
+    if (this.specMap === undefined) {
+      this.load();
+    }
+    if (queue) {
+      queue = this.buildCategorizedQueue(queue);
+      if (queue.length === 0) {
+        throw new Error('No tests found');
+      }
+    }
+    await this.wptHttpd.start();
+    const ret = await super.runJsTests(queue);
+    await this.wptHttpd.close();
+    return ret;
+  }
+
+  buildCategorizedQueue(queue) {
+    const result = new Set();
+    for (const item of queue) {
+      const matcher = new RegExp(item);
+      for (const file of this.specMap.keys()) {
+        if (matcher.test(file)) {
+          result.add(file);
+        }
+      }
+    }
+    return [ ...result ];
   }
 
   /**
@@ -276,7 +282,7 @@ ${it.code}
 
     const execArgv = [
       ...this.execArgv,
-      `--location=${this.wptResourceServerAddr}/${spec.getRelativePath()}`,
+      `--location=${this.wptHttpd.wptResourceServerAddr}/${spec.getRelativePath()}`,
       `--preload-script=${preloadPath}`,
       '--experimental-curl-fetch',
     ];
@@ -287,4 +293,5 @@ ${it.code}
 module.exports = {
   ResourceLoader,
   WPTRunner,
+  WptHttpd,
 };
