@@ -13,7 +13,6 @@ test(function() {
 
 test(function() {
   const timingInfo = createTimingInfo({ finalConnectionTimingInfo: {} });
-  const customGlobal = {};
   const requestedUrl = 'http://localhost:8080';
   const cacheMode = 'local';
   const initiatorType = 'fetch';
@@ -21,7 +20,6 @@ test(function() {
     timingInfo,
     requestedUrl,
     initiatorType,
-    customGlobal,
     cacheMode
   );
 
@@ -55,7 +53,6 @@ test(function() {
 // default values
 test(function() {
   const timingInfo = createTimingInfo({ finalConnectionTimingInfo: {} });
-  const customGlobal = {};
   const requestedUrl = 'http://localhost:8080';
   const cacheMode = 'local';
   const initiatorType = 'fetch';
@@ -63,7 +60,6 @@ test(function() {
     timingInfo,
     requestedUrl,
     initiatorType,
-    customGlobal,
     cacheMode
   );
 
@@ -174,7 +170,6 @@ test(function() {
     startTime: 50,
     encodedBodySize: 150,
   });
-  const customGlobal = {};
   const requestedUrl = 'http://localhost:8080';
   const cacheMode = '';
   const initiatorType = 'fetch';
@@ -182,7 +177,6 @@ test(function() {
     timingInfo,
     requestedUrl,
     initiatorType,
-    customGlobal,
     cacheMode
   );
 
@@ -228,7 +222,6 @@ test(function() {
   obs.observe({ entryTypes: [ 'resource' ] });
 
   const timingInfo = createTimingInfo({ finalConnectionTimingInfo: {} });
-  const customGlobal = {};
   const requestedUrl = 'http://localhost:8080';
   const cacheMode = 'local';
   const initiatorType = 'fetch';
@@ -236,7 +229,6 @@ test(function() {
     timingInfo,
     requestedUrl,
     initiatorType,
-    customGlobal,
     cacheMode
   );
 
