@@ -1,4 +1,5 @@
 #include "url/url.h"
+#include "ada.h"
 #include "aworker_binding.h"
 #include "binding/core/to_v8_traits.h"
 #include "error_handling.h"
@@ -23,9 +24,9 @@ using v8::Symbol;
 using v8::Value;
 
 template <>
-struct ToV8Traits<Url> {
+struct ToV8Traits<ada::url> {
   static v8::MaybeLocal<v8::Value> ToV8(v8::Local<v8::Context> context,
-                                        const Url& url) {
+                                        const ada::url& url) {
     Isolate* isolate = context->GetIsolate();
     Local<v8::Object> obj = v8::Object::New(isolate);
 #define V(key, Key)                                                            \
@@ -38,17 +39,17 @@ struct ToV8Traits<Url> {
     obj->Set(context, OneByteString(isolate, #key), value.ToLocalChecked())    \
         .ToChecked();                                                          \
   }
-    V(origin, Origin)
-    V(protocol, Protocol)
-    V(username, Username)
-    V(password, Password)
-    V(host, Host)
-    V(hostname, Hostname)
-    V(port, Port)
-    V(pathname, Pathname)
-    V(search, Search)
-    V(hash, Hash)
-    V(href, Href)
+    V(origin, get_origin)
+    V(protocol, get_protocol)
+    V(username, get_username)
+    V(password, get_password)
+    V(host, get_host)
+    V(hostname, get_hostname)
+    V(port, get_port)
+    V(pathname, get_pathname)
+    V(search, get_search)
+    V(hash, get_hash)
+    V(href, get_href)
 #undef V
 
     return obj;
@@ -103,46 +104,34 @@ AWORKER_METHOD(ParseUrl) {
   HandleScope scope(isolate);
 
   CHECK(info[0]->IsString());
-  Utf8Value url_utf8(isolate, info[0].As<String>());
+  Utf8Value url_utf8(isolate, info[0]);
 
-  Url url;
+  ada::result base;
+  ada::url* base_pointer = nullptr;
   if (info[1]->IsString()) {
-    Utf8Value base_utf8(isolate, info[1].As<String>());
-    url = Url(url_utf8.ToString(), base_utf8.ToString());
-  } else {
-    url = Url(url_utf8.ToString());
+    base = ada::parse(Utf8Value(isolate, info[1]).ToString());
+    if (!base) {
+      ThrowException(isolate, "Invalid base URL", ExceptionType::kTypeError);
+      return;
+    }
+    base_pointer = &base.value();
   }
-  if (!url.is_valid()) {
+
+  ada::result out = ada::parse(url_utf8.ToString(), base_pointer);
+  if (!out) {
     ThrowException(isolate, "Invalid URL", ExceptionType::kTypeError);
     return;
   }
 
-  MaybeLocal<Value> maybe_url = ToV8Traits<Url>::ToV8(immortal->context(), url);
+  MaybeLocal<Value> maybe_url =
+      ToV8Traits<ada::url>::ToV8(immortal->context(), out.value());
   if (maybe_url.IsEmpty()) {
     return;
   }
   info.GetReturnValue().Set(maybe_url.ToLocalChecked());
 }
 
-template <std::string (*func)(const std::string&)>
-AWORKER_METHOD(UpdateUrl) {
-  Immortal* immortal = Immortal::GetCurrent(info);
-  Isolate* isolate = immortal->isolate();
-  HandleScope scope(isolate);
-
-  CHECK(info[0]->IsString());
-  Utf8Value val_utf8(isolate, info[0].As<String>());
-
-  std::string result = func(val_utf8.ToString());
-  MaybeLocal<Value> maybe_result =
-      ToV8Traits<std::string>::ToV8(immortal->context(), result);
-  if (maybe_result.IsEmpty()) {
-    return;
-  }
-  info.GetReturnValue().Set(maybe_result.ToLocalChecked());
-}
-
-template <std::string (*func)(const std::string&, const std::string&)>
+template <void (ada::url::*func)(const std::string_view)>
 AWORKER_METHOD(UpdateUrl) {
   Immortal* immortal = Immortal::GetCurrent(info);
   Isolate* isolate = immortal->isolate();
@@ -150,33 +139,50 @@ AWORKER_METHOD(UpdateUrl) {
 
   CHECK(info[0]->IsString());
   CHECK(info[1]->IsString());
-  Utf8Value protocol_utf8(isolate, info[0].As<String>());
-  Utf8Value val_utf8(isolate, info[1].As<String>());
+  Utf8Value href_utf8(isolate, info[0]);
+  Utf8Value val_utf8(isolate, info[1]);
 
-  std::string result = func(protocol_utf8.ToString(), val_utf8.ToString());
+  ada::result result = ada::parse(href_utf8.ToString());
+  if (!result) {
+    ThrowException(isolate, "Invalid URL", ExceptionType::kTypeError);
+    return;
+  }
+
+  (result.value().*func)(val_utf8.ToString());
+
   MaybeLocal<Value> maybe_result =
-      ToV8Traits<std::string>::ToV8(immortal->context(), result);
+      ToV8Traits<ada::url>::ToV8(immortal->context(), result.value());
   if (maybe_result.IsEmpty()) {
     return;
   }
   info.GetReturnValue().Set(maybe_result.ToLocalChecked());
 }
 
-AWORKER_METHOD(UpdateHost) {
+template <bool (ada::url::*func)(const std::string_view)>
+AWORKER_METHOD(UpdateUrl) {
   Immortal* immortal = Immortal::GetCurrent(info);
   Isolate* isolate = immortal->isolate();
   HandleScope scope(isolate);
-  Local<Context> context = immortal->context();
 
   CHECK(info[0]->IsString());
   CHECK(info[1]->IsString());
-  Utf8Value protocol_utf8(isolate, info[0].As<String>());
-  Utf8Value val_utf8(isolate, info[1].As<String>());
+  Utf8Value href_utf8(isolate, info[0]);
+  Utf8Value val_utf8(isolate, info[1]);
 
-  std::pair<std::string, std::string> result =
-      Url::UpdateHost(protocol_utf8.ToString(), val_utf8.ToString());
+  ada::result result = ada::parse(href_utf8.ToString());
+  if (!result) {
+    ThrowException(isolate, "Invalid URL", ExceptionType::kTypeError);
+    return;
+  }
+
+  bool success = (result.value().*func)(val_utf8.ToString());
+  if (!success) {
+    ThrowException(isolate, "Invalid URL update", ExceptionType::kTypeError);
+    return;
+  }
+
   MaybeLocal<Value> maybe_result =
-      ToV8Traits<std::pair<std::string, std::string>>::ToV8(context, result);
+      ToV8Traits<ada::url>::ToV8(immortal->context(), result.value());
   if (maybe_result.IsEmpty()) {
     return;
   }
@@ -190,35 +196,38 @@ AWORKER_BINDING(Init) {
       exports, "serializeSearchParams", SerializeSearchParams);
 
   immortal->SetFunctionProperty(exports, "parseUrl", ParseUrl);
-
 #define V(name, func)                                                          \
   immortal->SetFunctionProperty(exports, #name, UpdateUrl<func>);
-  V(updateProtocol, Url::UpdateProtocol)
-  V(updateUserInfo, Url::UpdateUserInfo)
-  V(updatePort, Url::UpdatePort)
-  V(updateHash, Url::UpdateHash)
-  V(updateHostname, Url::UpdateHostname)
-  V(updatePathname, Url::UpdatePathname)
-  V(updateSearch, Url::UpdateSearch)
+  V(updateProtocol, &ada::url::set_protocol)
+  V(updateUsername, &ada::url::set_username)
+  V(updatePassword, &ada::url::set_password)
+  V(updatePort, &ada::url::set_port)
+  V(updateHash, &ada::url::set_hash)
+  V(updateHost, &ada::url::set_host)
+  V(updateHostname, &ada::url::set_hostname)
+  V(updateHref, &ada::url::set_href)
+  V(updatePathname, &ada::url::set_pathname)
+  V(updateSearch, &ada::url::set_search)
 #undef V
-  immortal->SetFunctionProperty(exports, "updateHost", UpdateHost);
 }
 
 AWORKER_EXTERNAL_REFERENCE(Init) {
-  registry->Register(ParseUrl);
   registry->Register(ParseSearchParams);
   registry->Register(SerializeSearchParams);
 
+  registry->Register(ParseUrl);
 #define V(func) registry->Register(UpdateUrl<func>);
-  V(Url::UpdateProtocol)
-  V(Url::UpdateUserInfo)
-  V(Url::UpdatePort)
-  V(Url::UpdateHash)
-  V(Url::UpdateHostname)
-  V(Url::UpdatePathname)
-  V(Url::UpdateSearch)
+  V(&ada::url::set_protocol)
+  V(&ada::url::set_username)
+  V(&ada::url::set_password)
+  V(&ada::url::set_port)
+  V(&ada::url::set_hash)
+  V(&ada::url::set_host)
+  V(&ada::url::set_hostname)
+  V(&ada::url::set_href)
+  V(&ada::url::set_pathname)
+  V(&ada::url::set_search)
 #undef V
-  registry->Register(UpdateHost);
 }
 
 }  // namespace url

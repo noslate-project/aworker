@@ -7,6 +7,7 @@ const { NodeRunner, AworkerRunner } = require('../test/common/runner');
 const { NoslatedAworkerRunner } = require('../test/common/agent-runner');
 const { WPTRunner } = require('../test/common/wpt');
 const { PseudoTtyRunner } = require('../test/common/pseudo_tty');
+const { WptHostedAworkerRunner } = require('../test/common/wpt-hosted');
 
 const testRoot = path.resolve(__dirname, '../test');
 
@@ -26,6 +27,7 @@ const runners = {
   node: NodeRunner,
   wpt: WPTRunner,
   'pseudo-tty': PseudoTtyRunner,
+  'wpt-hosted': WptHostedAworkerRunner,
 };
 
 async function main(argv = []) {

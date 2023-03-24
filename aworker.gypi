@@ -31,6 +31,7 @@
     'deps/cityhash/cityhash.gyp:cityhash',
     '<(noslate_zlib_gyp):zlib',
     '<(noslate_openssl_gyp):openssl',
+    '<(noslate_build_dir)/gypfiles/ada.gyp:ada',
   ],
   'conditions': [
     [

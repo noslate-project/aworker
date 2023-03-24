@@ -1,8 +1,9 @@
 #ifndef SRC_BINDING_CURL_CURL_VERSION_H_
 #define SRC_BINDING_CURL_CURL_VERSION_H_
 
-#include <curl/curl.h>
 #include "aworker_binding.h"
+
+struct curl_version_info_data;
 
 namespace aworker {
 namespace curl {
@@ -14,6 +15,8 @@ class CurlVersions {
 
   static AWORKER_GETTER(GetterProtocols);
   static AWORKER_GETTER(GetterFeatures);
+
+  static const char* get_version();
 
  private:
   CurlVersions();
