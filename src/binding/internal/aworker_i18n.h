@@ -21,6 +21,13 @@ using v8::Local;
 using v8::Object;
 using v8::Value;
 
+enum ConverterFlags {
+  CONVERTER_FLAGS_NONE = 0,
+  CONVERTER_FLAGS_FATAL = 1 << 0,
+  CONVERTER_FLAGS_IGNORE_BOM = 1 << 1,
+  CONVERTER_FLAGS_STREAM = 1 << 2,
+};
+
 class ConverterObject : public SnapshotableObject {
   DEFINE_WRAPPERTYPEINFO();
   SIZE_IN_BYTES(ConverterObject)
@@ -30,13 +37,6 @@ class ConverterObject : public SnapshotableObject {
   enum InternalFields {
     kName = BaseObject::kInternalFieldCount,
     kInternalFieldCount,
-  };
-  enum ConverterFlags {
-    CONVERTER_FLAGS_FLUSH = 0x01,
-    CONVERTER_FLAGS_FATAL = 0x02,
-    CONVERTER_FLAGS_IGNORE_BOM = 0x04,
-    CONVERTER_FLAGS_UNICODE = 0x08,
-    CONVERTER_FLAGS_BOM_SEEN = 0x10,
   };
 
   static AWORKER_METHOD(New);
@@ -51,24 +51,7 @@ class ConverterObject : public SnapshotableObject {
                            Local<v8::String> name);
   ~ConverterObject();
 
-  size_t max_char_size() const;
   size_t min_char_size() const;
-
-  void set_bom_seen(bool seen) {
-    if (seen) {
-      flags_ |= CONVERTER_FLAGS_BOM_SEEN;
-    } else {
-      flags_ &= ~CONVERTER_FLAGS_BOM_SEEN;
-    }
-  }
-
-  bool bom_seen() const {
-    return (flags_ & CONVERTER_FLAGS_BOM_SEEN) == CONVERTER_FLAGS_BOM_SEEN;
-  }
-
-  bool unicode() const {
-    return (flags_ & CONVERTER_FLAGS_UNICODE) == CONVERTER_FLAGS_UNICODE;
-  }
 
   bool ignore_bom() const {
     return (flags_ & CONVERTER_FLAGS_IGNORE_BOM) == CONVERTER_FLAGS_IGNORE_BOM;
@@ -76,7 +59,7 @@ class ConverterObject : public SnapshotableObject {
 
  private:
   UConverter* conv_;
-  int flags_ = 0;
+  int flags_ = CONVERTER_FLAGS_NONE;
 };
 
 }  // namespace i18n

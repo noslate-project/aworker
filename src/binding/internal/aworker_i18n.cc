@@ -5,6 +5,8 @@
 #include "immortal.h"
 
 #include "aworker_i18n.h"
+#include "debug_utils-inl.h"
+#include "utils/resizable_buffer.h"
 
 namespace aworker {
 
@@ -84,10 +86,6 @@ size_t ConverterObject::min_char_size() const {
   return ucnv_getMinCharSize(conv_);
 }
 
-size_t ConverterObject::max_char_size() const {
-  return ucnv_getMaxCharSize(conv_);
-}
-
 AWORKER_METHOD(ConverterObject::New) {
   Immortal* immortal = Immortal::GetCurrent(info);
   Isolate* isolate = immortal->isolate();
@@ -106,15 +104,20 @@ AWORKER_METHOD(ConverterObject::New) {
   co->conv_ = ucnv_open(*name, &status);
   if (U_FAILURE(status)) {
     delete co;
-    ThrowException(isolate, "icu open failed.");
+    std::string err_str = SPrintF("ICU open failed(%s)", u_errorName(status));
+    ThrowException(isolate, err_str.c_str(), ExceptionType::kTypeError);
     return;
   }
 
+  UConverterToUCallback callback;
   if (fatal) {
-    status = U_ZERO_ERROR;
-    ucnv_setToUCallBack(
-        co->conv_, UCNV_TO_U_CALLBACK_STOP, nullptr, nullptr, nullptr, &status);
+    callback = UCNV_TO_U_CALLBACK_STOP;
+  } else {
+    callback = UCNV_TO_U_CALLBACK_SUBSTITUTE;
   }
+  status = U_ZERO_ERROR;
+  ucnv_setToUCallBack(co->conv_, callback, nullptr, nullptr, nullptr, &status);
+  CHECK(U_SUCCESS(status));
 
   info.GetReturnValue().Set(info.This());
 }
@@ -122,76 +125,60 @@ AWORKER_METHOD(ConverterObject::New) {
 AWORKER_METHOD(ConverterObject::Decode) {
   Immortal* immortal = Immortal::GetCurrent(info);
   Isolate* isolate = immortal->isolate();
-  Local<Context> context = immortal->context();
   EscapableHandleScope scope(isolate);
 
-  CHECK_GE(info.Length(), 1);
+  CHECK_EQ(info.Length(), 2);
   ConverterObject* co;
   ASSIGN_OR_RETURN_UNWRAP(&co, info.This());
 
-  Local<ArrayBufferView> input = info[0].As<ArrayBufferView>();
+  bool stream = info[1].As<Int32>()->Value() & CONVERTER_FLAGS_STREAM;
 
-  // TODO(zl131478): is unused variable flags useful?
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-variable"
-  int flags = info[1]->Uint32Value(context).ToChecked();  // NOLINT
-#pragma GCC diagnostic pop
+  Local<ArrayBufferView> input = info[0].As<ArrayBufferView>();
+  std::shared_ptr<v8::BackingStore> input_bs =
+      input->Buffer()->GetBackingStore();
 
   size_t length = input->ByteLength();
+
+  const char* input_data =
+      static_cast<char*>(input_bs->Data()) + input->ByteOffset();
+  CHECK(input_data);
+
   size_t limit = co->min_char_size() * length;
 
-  Local<ArrayBuffer> result =
-      ArrayBuffer::New(isolate, (limit * sizeof(UChar)));
-  Local<Uint8Array> resultview =
-      Uint8Array::New(result, 0, (limit * sizeof(UChar)));
-
-  const char* source =
-      static_cast<char*>(input->Buffer()->GetBackingStore()->Data()) +
-      input->ByteOffset();
-  CHECK(source);
-
-  size_t source_length = input->ByteLength();
+  ResizableBuffer buf(limit * sizeof(UChar));
+  UChar* buf_begin = static_cast<UChar*>(buf.buffer());
+  UChar* buf_dest = static_cast<UChar*>(buf.buffer());
 
   UErrorCode status = U_ZERO_ERROR;
-  UChar* target =
-      static_cast<UChar*>(resultview->Buffer()->GetBackingStore()->Data()) +
-      resultview->ByteOffset();
-  UChar* save = target;
-  CHECK(save);
-
   ucnv_toUnicode(co->conv_,
-                 &target,
-                 target + limit,
-                 &source,
-                 source + source_length,
+                 &buf_dest,
+                 buf_dest + limit,
+                 &input_data,
+                 input_data + length,
                  nullptr,
-                 0,
+                 !stream,
                  &status);
+  // Reset stateful conversion
+  if (!stream) {
+    ucnv_resetToUnicode(co->conv_);
+  }
 
-  if (!U_SUCCESS(status)) {
-    info.GetReturnValue().Set(status);
+  if (U_FAILURE(status)) {
+    std::string err_str =
+        SPrintF("ucnv_toUnicode failed(%s)", u_errorName(status));
+    ThrowException(isolate, err_str.c_str(), ExceptionType::kTypeError);
     return;
   }
 
-  UChar* string_start = save;
-  size_t string_length = target - save;
-
-  if (string_length <= 0) {
-    info.GetReturnValue().Set(status);
-  }
-
-  if (save[0] == 0xFEFF) {  // has initial bom head
-    co->set_bom_seen(true);
-    string_start += 1;
+  size_t string_length = buf_dest - buf_begin;
+  if (!co->ignore_bom() && buf_begin[0] == 0xFEFF) {  // has initial bom head
+    buf_begin += 1;
     string_length -= 1;
   }
 
-  length = target - save;
-  // std::cout << "====>>" <<  length << "," << target << "," << save <<
-  // std::endl << std::endl;
   Local<String> output =
       String::NewFromTwoByte(isolate,
-                             reinterpret_cast<const uint16_t*>(string_start),
+                             reinterpret_cast<const uint16_t*>(buf_begin),
                              NewStringType::kNormal,
                              string_length)
           .ToLocalChecked();
@@ -254,17 +241,13 @@ AWORKER_BINDING(Init) {
 
   Local<FunctionTemplate> tpl =
       FunctionTemplate::New(isolate, ConverterObject::New);
-
   tpl->InstanceTemplate()->SetInternalFieldCount(
       ConverterObject::kInternalFieldCount);
 
-  MaybeLocal<String> maybe_name = String::NewFromUtf8(isolate, "converter");
-  CHECK(!maybe_name.IsEmpty());
-  Local<String> name = maybe_name.ToLocalChecked();
+  Local<String> name = OneByteString(isolate, "Converter");
   tpl->SetClassName(name);
 
   Local<ObjectTemplate> prototype_template = tpl->PrototypeTemplate();
-
   immortal->SetFunctionProperty(
       prototype_template, "decode", ConverterObject::Decode);
 
@@ -274,6 +257,16 @@ AWORKER_BINDING(Init) {
   // encoder
   immortal->SetFunctionProperty(exports, "encodeUtf8", EncodeUtf8);
   immortal->SetFunctionProperty(exports, "encodeIntoUtf8", EncodeIntoUtf8);
+
+#define V(val)                                                                 \
+  exports                                                                      \
+      ->Set(context, OneByteString(isolate, #val), Int32::New(isolate, val))   \
+      .Check();
+  V(CONVERTER_FLAGS_NONE)
+  V(CONVERTER_FLAGS_FATAL)
+  V(CONVERTER_FLAGS_IGNORE_BOM)
+  V(CONVERTER_FLAGS_STREAM)
+#undef V
 }
 
 AWORKER_EXTERNAL_REFERENCE(Init) {
