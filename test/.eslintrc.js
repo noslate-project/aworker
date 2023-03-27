@@ -14,6 +14,7 @@ const testHarnessGlobals = [
   // Asserts
   'assert_true', 'assert_false', 'assert_equals', 'assert_not_equals', 'assert_in_array',
   'assert_array_equals', 'assert_array_approx_equals', 'assert_approx_equals',
+  'assert_object_equals',
   'assert_less_than', 'assert_greater_than', 'assert_between_exclusive', 'assert_less_than_equal', 'assert_greater_than_equal', 'assert_between_inclusive',
   'assert_regexp_match',
   'assert_class_string', 'assert_own_property', 'assert_not_own_property', 'assert_inherits', 'assert_idl_attribute', 'assert_readonly',

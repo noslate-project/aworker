@@ -19,7 +19,7 @@ function run(args) {
     expected = trimString(expected);
 
     const actual = await new Promise(resolve => {
-      const child = cp.spawn(fixtures.path('product', 'aworker'), [ filepath ], {
+      const child = cp.spawn(fixtures.path('product', 'aworker'), [ ...args.slice(1), filepath ], {
         env: process.env,
         stdio: 'pipe',
       });
@@ -66,11 +66,16 @@ function assert_match(actual, expected) {
 
 class PseudoTtyRunner extends NodeRunner {
   run(spec/* , scriptsToRun */) {
+    const aworkerArgs = [];
+    if (spec.meta.flags) {
+      aworkerArgs.push(...spec.meta.flags.split(' '));
+    }
     return super.spawn(spec.filename, fixtures.path('product', 'node'), [
       ...this.execArgv,
       __filename,
       'child',
       spec.getAbsolutePath(),
+      ...aworkerArgs,
     ], {
       env: { ...process.env, ...spec.meta.env },
     });
