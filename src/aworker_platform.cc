@@ -172,6 +172,7 @@ void PlatformTaskRunner::PostNonNestableDelayedTask(unique_ptr<v8::Task> task,
 
 AworkerPlatform::AworkerPlatform() {
   CHECK_EQ(uv_loop_init(&loop_), 0);
+  CHECK_EQ(uv_loop_configure(&loop_, UV_METRICS_IDLE_TIME), 0);
   task_runner_ = std::make_unique<aworker::PlatformTaskRunner>(&loop_);
   trace_agent_ = std::make_unique<TraceAgent>(&loop_);
   aworker::TracingController* controller = trace_agent_->GetTracingController();
