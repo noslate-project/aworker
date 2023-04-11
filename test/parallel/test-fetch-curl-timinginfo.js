@@ -5,14 +5,23 @@ promise_test(async function() {
   const res = await fetch('http://localhost:30122/echo', { method: 'GET' });
   const timingInfo = res[Symbol.for('aworker:fetch_timing_info')];
   assert_equals(typeof timingInfo, 'object');
-  assert_equals(typeof timingInfo.startTime, 'number');
-  assert_equals(typeof timingInfo.totalTime, 'number');
-  assert_equals(typeof timingInfo.namelookupTime, 'number');
-  assert_equals(typeof timingInfo.connectTime, 'number');
-  assert_equals(typeof timingInfo.appconnectTime, 'number');
-  assert_equals(typeof timingInfo.pretransferTime, 'number');
-  assert_equals(typeof timingInfo.starttransferTime, 'number');
-  assert_equals(typeof timingInfo.redirectTime, 'number');
+
+  const keys = [
+    'startTime',
+    'totalTime',
+    'namelookupTime',
+    'connectTime',
+    'appconnectTime',
+    'pretransferTime',
+    'starttransferTime',
+    'redirectTime',
+    'eventLoopIdle',
+    'eventLoopActive',
+    'eventLoopUtilization',
+  ];
+  for (const key of keys) {
+    assert_equals(typeof timingInfo[key], 'number', key);
+  }
 }, 'timinginfo property');
 
 promise_test(async function() {
@@ -28,6 +37,11 @@ promise_test(async function() {
   assert_true(timingInfo.pretransferTime > timingInfo.connectTime);
   assert_true(timingInfo.connectTime >= timingInfo.namelookupTime);
   assert_true(timingInfo.namelookupTime > 0);
+
+  // event loop utilization
+  assert_true(timingInfo.eventLoopIdle > 0);
+  assert_true(timingInfo.eventLoopActive > 0);
+  assert_true(timingInfo.eventLoopUtilization < 1);
 
   // not implement
   assert_true(timingInfo.redirectTime >= 0);
