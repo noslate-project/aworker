@@ -37,7 +37,7 @@ promise_test(async function() {
   assert_true(stat.isFile());
   helper.validate(fullpath, [
     [ 'header.trigger', 'Signal' ],
-    [ 'javascriptStack.message', 'No stack, VmState: EXTERNAL' ],
+    [ 'javascriptStack.message', 'No stack, VmState: IDLE' ],
   ]);
 }, 'report on signal');
 

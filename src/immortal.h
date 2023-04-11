@@ -284,6 +284,8 @@ class Immortal : public MemoryRetainer {
 
   void Exit(int code);
 
+  void StartLoopLatencyWatchdog();
+
   // TODO(chengzhong.wcz): Move helper funtions out of Immortal.
   bool SetAccessor(v8::Local<v8::Object> object,
                    const char* name,
