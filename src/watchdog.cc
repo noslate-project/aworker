@@ -23,7 +23,9 @@ void Watchdog::RegisterEntry(WatchdogEntry* entry) {
 }
 
 void Watchdog::StartIfNeeded() {
-  CHECK_EQ(started_, false);
+  if (started_) {
+    return;
+  }
   if (pending_entries_.size() == 0) {
     return;
   }

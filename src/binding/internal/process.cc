@@ -185,6 +185,13 @@ AWORKER_METHOD(SetWorkerState) {
   }
 }
 
+void StartLoopLatencyWatchdogIfNeeded(const FunctionCallbackInfo<Value>& info) {
+  Immortal* immortal = Immortal::GetCurrent(info);
+  if (immortal->commandline_parser()->loop_latency_limit_ms()) {
+    immortal->StartLoopLatencyWatchdog();
+  }
+}
+
 #define METADATA_KEYS(V)                                                       \
   V(AWORKER_PLATFORM, platform)                                                \
   V(AWORKER_ARCH, arch)                                                        \
@@ -226,6 +233,10 @@ AWORKER_BINDING(Init) {
   immortal->SetFunctionProperty(exports, "isATTY", IsATTY);
 
   immortal->SetFunctionProperty(exports, "setWorkerState", SetWorkerState);
+
+  immortal->SetFunctionProperty(exports,
+                                "startLoopLatencyWatchdogIfNeeded",
+                                StartLoopLatencyWatchdogIfNeeded);
 
   Isolate* isolate = immortal->isolate();
 
@@ -276,6 +287,7 @@ AWORKER_EXTERNAL_REFERENCE(Init) {
   registry->Register(WriteStdxxx);
   registry->Register(IsATTY);
   registry->Register(SetWorkerState);
+  registry->Register(StartLoopLatencyWatchdogIfNeeded);
 
 #define V(IT, NAME)                                                            \
   registry->Register(GetImmortalFunction##IT);                                 \

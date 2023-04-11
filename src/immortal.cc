@@ -214,6 +214,10 @@ Immortal::Immortal(uv_loop_t* loop,
 
   CHECK_EQ(uv_prepare_init(loop, &prepare_handle_), 0);
   CHECK_EQ(uv_check_init(loop, &check_handle_), 0);
+  uv_prepare_start(&prepare_handle_, OnPrepare);
+  uv_check_start(&check_handle_, OnCheck);
+  uv_unref(reinterpret_cast<uv_handle_t*>(&prepare_handle_));
+  uv_unref(reinterpret_cast<uv_handle_t*>(&check_handle_));
 
   worker_state_ = WorkerState::kBootstrapping;
 
@@ -622,23 +626,24 @@ void Immortal::BootstrapAgent(const std::string& script_filename) {
   if (commandline_parser()->report_on_signal()) {
     report_watchdog_ = std::make_unique<report::ReportWatchdog>(this);
   }
-  if (commandline_parser()->loop_latency_limit_ms()) {
-    uv_prepare_start(&prepare_handle_, OnPrepare);
-    uv_check_start(&check_handle_, OnCheck);
-    loop_latency_watchdog_ = std::make_unique<LoopLatencyWatchdog>(
-        this, commandline_parser()->loop_latency_limit_ms());
-  }
   watchdog_->StartIfNeeded();
 
   if (commandline_parser()->inspect_brk()) {
     CHECK(inspector_agent_ != nullptr);
     inspector_agent_->WaitForConnect();
   }
+}
 
+void Immortal::StartLoopLatencyWatchdog() {
   if (loop_latency_watchdog_) {
-    // Initiate initial loop check.
-    loop_latency_watchdog_->OnCheck();
+    return;
   }
+  DCHECK(commandline_parser()->loop_latency_limit_ms());
+  loop_latency_watchdog_ = std::make_unique<LoopLatencyWatchdog>(
+      this, commandline_parser()->loop_latency_limit_ms());
+  watchdog_->StartIfNeeded();
+  // Initiate initial loop check.
+  loop_latency_watchdog_->OnCheck();
 }
 
 void Immortal::StartAgentChannel() {
@@ -730,6 +735,7 @@ v8::Maybe<bool> Immortal::StartExecution() {
 // static
 void Immortal::OnPrepare(uv_prepare_t* handle) {
   Immortal* immortal = ContainerOf(&Immortal::prepare_handle_, handle);
+  immortal->isolate()->SetIdle(true);
   if (immortal->loop_latency_watchdog_) {
     immortal->loop_latency_watchdog_->OnPrepare();
   }
@@ -738,6 +744,7 @@ void Immortal::OnPrepare(uv_prepare_t* handle) {
 // static
 void Immortal::OnCheck(uv_check_t* handle) {
   Immortal* immortal = ContainerOf(&Immortal::check_handle_, handle);
+  immortal->isolate()->SetIdle(false);
   if (immortal->loop_latency_watchdog_) {
     immortal->loop_latency_watchdog_->OnCheck();
   }
