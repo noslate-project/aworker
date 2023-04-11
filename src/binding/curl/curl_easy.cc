@@ -179,9 +179,34 @@ CurlEasy::~CurlEasy() {
 
 void CurlEasy::OnDone(CURLcode code) {
   HandleScope scope(isolate());
-  Local<v8::Value> argv[] = {
-      v8::Uint32::New(isolate(), code),
-  };
+  curl_off_t total_time_t;
+  curl_off_t namelookup_time_t;
+  curl_off_t connect_time_t;
+  curl_off_t appconnect_time_t;
+  curl_off_t pretransfer_time_t;
+  curl_off_t starttransfer_time_t;
+  curl_off_t redirect_time_t;
+
+  curl_easy_getinfo(easy_handle_, CURLINFO_TOTAL_TIME_T, &total_time_t);
+  curl_easy_getinfo(
+      easy_handle_, CURLINFO_NAMELOOKUP_TIME_T, &namelookup_time_t);
+  curl_easy_getinfo(easy_handle_, CURLINFO_CONNECT_TIME_T, &connect_time_t);
+  curl_easy_getinfo(
+      easy_handle_, CURLINFO_APPCONNECT_TIME_T, &appconnect_time_t);
+  curl_easy_getinfo(
+      easy_handle_, CURLINFO_PRETRANSFER_TIME_T, &pretransfer_time_t);
+  curl_easy_getinfo(
+      easy_handle_, CURLINFO_STARTTRANSFER_TIME_T, &starttransfer_time_t);
+  curl_easy_getinfo(easy_handle_, CURLINFO_REDIRECT_TIME_T, &redirect_time_t);
+
+  Local<v8::Value> argv[] = {v8::Uint32::New(isolate(), code),
+                             v8::Integer::New(isolate(), total_time_t),
+                             v8::Integer::New(isolate(), namelookup_time_t),
+                             v8::Integer::New(isolate(), connect_time_t),
+                             v8::Integer::New(isolate(), appconnect_time_t),
+                             v8::Integer::New(isolate(), pretransfer_time_t),
+                             v8::Integer::New(isolate(), starttransfer_time_t),
+                             v8::Integer::New(isolate(), redirect_time_t)};
   MakeCallback(OneByteString(isolate(), "_onDone"), arraysize(argv), argv);
 }
 
