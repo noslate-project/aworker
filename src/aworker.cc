@@ -16,6 +16,7 @@ extern "C" {
 #include "aworker_logger.h"
 #include "aworker_perf.h"
 #include "aworker_platform.h"
+#include "aworker_profiler.h"
 #include "aworker_v8.h"
 #include "aworker_version.h"
 #include "command_parser.h"
@@ -343,6 +344,10 @@ int AworkerMainInstance::Start() {
     immortal_->BootstrapAgent(script_filename);
     per_process::DebugPrintCurrentTime("bootstrapped agent");
 
+    if (cli_->cpu_prof()) {
+      profiler::StartCpuProfiler(isolate_, "aworker");
+    }
+
     CHECK_EQ(immortal_->StartExecution().ToChecked(), true);
   }
 
@@ -355,6 +360,10 @@ int AworkerMainInstance::Start() {
 
   if (cli_->mixin_inspect()) {
     immortal_->inspector_agent()->WaitForDisconnect();
+  }
+
+  if (cli_->cpu_prof()) {
+    profiler::StopCpuProfiler(isolate_, "aworker");
   }
 
   immortal_->RunCleanupHooks();

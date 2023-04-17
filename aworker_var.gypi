@@ -72,6 +72,7 @@
       'src/aworker_logger.cc',
       'src/aworker_perf.cc',
       'src/aworker_platform.cc',
+      'src/aworker_profiler.cc',
       'src/snapshot/snapshot_builder.cc',
       'src/snapshot/snapshotable.cc',
       'src/task_queue.cc',
