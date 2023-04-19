@@ -316,6 +316,10 @@ void InspectorAgent::Stop() {
   client_.reset();
 }
 
+bool InspectorAgent::HasConnectedSessions() {
+  return client_->hasConnectedSessions();
+}
+
 void InspectorAgent::WaitForDisconnect() {
   CHECK_NOT_NULL(client_);
   if (client_->hasConnectedSessions()) {

@@ -31,7 +31,11 @@ class TryCatchScope : public v8::TryCatch {
   CatchMode _mode;
 };
 
-#define ERRORS_WITH_CODE(V) V(ERR_STRING_TOO_LONG, Error)
+#define ERRORS_WITH_CODE(V)                                                    \
+  V(ERR_STRING_TOO_LONG, TypeError)                                            \
+  V(ERR_INSPECTOR_NOT_ACTIVE, TypeError)                                       \
+  V(ERR_INVALID_ARGUMENT, TypeError)                                           \
+  V(ERR_FUNCTION_EXPECTED, TypeError)
 
 #define V(code, type)                                                          \
   inline v8::Local<v8::Value> code(v8::Isolate* isolate,                       \
