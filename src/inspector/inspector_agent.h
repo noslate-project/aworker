@@ -53,6 +53,7 @@ class InspectorAgent {
   void WaitForConnect();
   // Blocks till all the sessions with "WaitForDisconnectOnShutdown" disconnect
   void WaitForDisconnect();
+  bool HasConnectedSessions();
   void ReportUncaughtException(v8::Local<v8::Value> error,
                                v8::Local<v8::Message> message);
 
