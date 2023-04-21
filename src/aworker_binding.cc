@@ -19,6 +19,7 @@
   V(errors)                                                                    \
   V(file)                                                                      \
   V(i18n)                                                                      \
+  V(inspector)                                                                 \
   V(immediate)                                                                 \
   V(module_wrap)                                                               \
   V(perf)                                                                      \
