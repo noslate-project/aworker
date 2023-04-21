@@ -363,6 +363,7 @@ int AworkerMainInstance::Start() {
   }
 
   if (cli_->cpu_prof()) {
+    // TODO(liyilong.lyl): stop profiler when receive SIGINT signal
     profiler::StopCpuProfiler(isolate_, "aworker");
   }
 
