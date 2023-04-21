@@ -345,7 +345,7 @@ void SnapshotBuilder::Generate(SnapshotData* out,
       std::string filename = immortal->commandline_parser()->script_filename();
       if (!filename.empty()) {
         immortal->BootstrapPerExecution();
-        immortal->BootstrapAgent(filename);
+        immortal->BootstrapAgent();
         CHECK(immortal->StartExecution().ToChecked());
         // Disallow handles been created without local HandleScopes.
         v8::SealHandleScope scope(isolate);

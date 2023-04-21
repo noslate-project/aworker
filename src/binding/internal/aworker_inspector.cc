@@ -17,7 +17,7 @@ namespace inspector {
 void CallAndPauseOnFirstStatement(const FunctionCallbackInfo<Value>& info) {
   Immortal* immortal = Immortal::GetCurrent(info);
   Isolate* isolate = immortal->isolate();
-  if (info.Length() < 1) {
+  if (info.Length() < 2) {
     return THROW_ERR_INVALID_ARGUMENT(immortal, "Expect more than 1 argument");
   }
   if (!info[0]->IsFunction()) {

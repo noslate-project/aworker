@@ -289,10 +289,10 @@ InspectorAgent::InspectorAgent(Immortal* immortal) : immortal_(immortal) {}
 InspectorAgent::~InspectorAgent() {}
 
 bool InspectorAgent::Start(const std::string& script_name) {
+  if (client_ != nullptr) return true;
   script_name_ = script_name;
 
   client_ = std::make_shared<AworkerInspectorClient>(immortal_, script_name);
-  StartInspectorIo();
   return true;
 }
 
@@ -314,6 +314,10 @@ bool InspectorAgent::StartInspectorIo() {
 void InspectorAgent::Stop() {
   io_.reset();
   client_.reset();
+}
+
+void InspectorAgent::StopInspectorIo() {
+  io_.reset();
 }
 
 bool InspectorAgent::HasConnectedSessions() {
