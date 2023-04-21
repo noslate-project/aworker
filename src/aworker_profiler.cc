@@ -1,7 +1,8 @@
+#include "aworker_profiler.h"
 #include <sys/time.h>
 #include <fstream>
 #include <sstream>
-#include "aworker_profiler.h"
+#include "diag_report.h"
 #include "json_utils.h"
 #include "uv.h"
 #include "v8-profiler.h"
@@ -13,26 +14,6 @@ void LocalTime(tm* tm_struct) {
   timeval time_val;
   gettimeofday(&time_val, nullptr);
   localtime_r(&time_val.tv_sec, tm_struct);
-}
-
-std::string MakeFilename() {
-  std::ostringstream oss;
-  tm tm_struct;
-  LocalTime(&tm_struct);
-
-  oss << "CPU";
-  oss << "." << std::setfill('0') << std::setw(4) << tm_struct.tm_year + 1900;
-  oss << std::setfill('0') << std::setw(2) << tm_struct.tm_mon + 1;
-  oss << std::setfill('0') << std::setw(2) << tm_struct.tm_mday;
-  oss << "." << std::setfill('0') << std::setw(2) << tm_struct.tm_hour;
-  oss << std::setfill('0') << std::setw(2) << tm_struct.tm_min;
-  oss << std::setfill('0') << std::setw(2) << tm_struct.tm_sec;
-  oss << ".";
-  oss << uv_os_getpid();
-  oss << ".";
-  oss << "cpuprofile";
-
-  return oss.str();
 }
 
 void SerializeNode(v8::Isolate* isolate,
@@ -143,12 +124,15 @@ void StopCpuProfiler(v8::Isolate* isolate, std::string t) {
   v8::Local<v8::String> title =
       v8::String::NewFromUtf8(isolate, t.c_str(), v8::NewStringType::kNormal)
           .ToLocalChecked();
-  auto profiler = cpu_profiler;
-  v8::CpuProfile* profile = profiler->StopProfiling(title);
+  v8::CpuProfile* profile = cpu_profiler->StopProfiling(title);
 
-  Serialize(isolate, profile, MakeFilename());
+  Serialize(isolate,
+            profile,
+            *report::DiagnosticFilename("CPU", "cpuprofile"));
 
   profile->Delete();
+  cpu_profiler->Dispose();
+  cpu_profiler = nullptr;
 }
 
 }  // namespace profiler
