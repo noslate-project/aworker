@@ -94,8 +94,7 @@ void NoslatedDiagChannel::InspectorStart(
     per_process::Debug(DebugCategory::AGENT_CHANNEL,
                        "diagnostics channel inspector start interrupted\n");
 
-    // TODO(chengzhong.wcz): get main context script name.
-    immortal_->inspector_agent()->Start("");
+    immortal_->inspector_agent()->StartInspectorIo();
 
     closure(CanonicalCode::OK,
             nullptr,

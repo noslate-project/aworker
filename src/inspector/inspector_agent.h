@@ -67,6 +67,7 @@ class InspectorAgent {
 
   // Can only be called from the main thread.
   bool StartInspectorIo();
+  void StopInspectorIo();
 
   void ContextCreated(v8::Local<v8::Context> context, const ContextInfo& info);
 

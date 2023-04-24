@@ -263,13 +263,17 @@ class Immortal : public MemoryRetainer {
    */
   bool Bootstrap();
   /**
+   * Bootstrap inspector client before any script evaluation.
+   */
+  bool BootstrapInspector();
+  /**
    * Bootstrap JavaScript environments that are specific to per execution.
    */
   void BootstrapPerExecution();
   /**
    * Bootstrap agent connections.
    */
-  void BootstrapAgent(const std::string& script_filename);
+  void BootstrapAgent();
   void StopAgent();
   /**
    * Start user code execution.
