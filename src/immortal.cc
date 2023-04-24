@@ -3,6 +3,7 @@
 #include "agent_channel/noslated_diag_channel.h"
 #include "aworker.h"
 #include "aworker_binding.h"
+#include "aworker_profiler.h"
 #include "binding/internal/aworker_cache.h"
 #include "binding/internal/process.h"
 #include "command_parser_group.h"
@@ -383,6 +384,14 @@ v8::Maybe<bool> Immortal::RunCleanupHooks() {
 
 void Immortal::Exit(int code) {
   exit(code);
+}
+
+void Immortal::Raise(int sig_num) {
+  if (commandline_parser()->cpu_prof()) {
+    profiler::StopCpuProfiler(isolate(), "aworker");
+  }
+
+  raise(sig_num);
 }
 
 Local<String> CreateName(Isolate* isolate, const char* name) {

@@ -10,12 +10,6 @@
 namespace aworker {
 namespace profiler {
 
-void LocalTime(tm* tm_struct) {
-  timeval time_val;
-  gettimeofday(&time_val, nullptr);
-  localtime_r(&time_val.tv_sec, tm_struct);
-}
-
 void SerializeNode(v8::Isolate* isolate,
                    const v8::CpuProfileNode* node,
                    JSONWriter* writer) {
@@ -93,11 +87,6 @@ void Serialize(v8::Isolate* isolate,
     int64_t delta = node->GetSampleTimestamp(index) - prev;
     writer.json_element(delta);
   }
-  writer.json_arrayend();
-
-  // http profiling detail
-
-  writer.json_arraystart("httpDetail");
   writer.json_arrayend();
 
   // write to file

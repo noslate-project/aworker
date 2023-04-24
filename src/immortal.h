@@ -284,6 +284,8 @@ class Immortal : public MemoryRetainer {
 
   void Exit(int code);
 
+  void Raise(int sig_num);
+
   void StartLoopLatencyWatchdog();
 
   // TODO(chengzhong.wcz): Move helper funtions out of Immortal.

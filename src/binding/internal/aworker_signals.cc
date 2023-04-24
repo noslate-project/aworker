@@ -87,7 +87,7 @@ class SignalWrap : public HandleWrap {
 
     Local<v8::Int32> sig_num = info[0].As<v8::Int32>();
 
-    raise(sig_num->Value());
+    immortal->Raise(sig_num->Value());
   }
 
   SignalWrap(Immortal* immortal, Local<Object> object, int32_t sig_num)
