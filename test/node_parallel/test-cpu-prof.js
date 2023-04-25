@@ -28,4 +28,19 @@ promise_test(async () => {
   const files = fs.readdirSync(fixtures.path('tmp')).filter(v => v.endsWith('.cpuprofile'));
   assert_equals(files.length, 1);
   verifyFrames(output, files[0], 'fetch.js');
+  fs.unlinkSync(files[0]);
 }, 'should output cpuprofile file');
+
+promise_test(async () => {
+  const cp = common.spawnAworker([ '--cpu-prof', path.join(__dirname, 'fixtures', 'fetch-loop.js') ], {
+    cwd: fixtures.path('tmp'),
+    stdio: [ 'ignore', 'pipe', 'pipe' ],
+  });
+  const output = common.collectStdout(cp);
+  await common.sleep(1000);
+  cp.kill();
+  await common.sleep(1000);
+  const files = fs.readdirSync(fixtures.path('tmp')).filter(v => v.endsWith('.cpuprofile'));
+  assert_equals(files.length, 1);
+  verifyFrames(output, files[0], 'fetch-loop.js');
+}, 'should output cpuprofile file with SIGTERM');
