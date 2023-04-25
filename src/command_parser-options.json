@@ -70,7 +70,7 @@
       "desc": "print version string"
     },
     "cpu-prof": {
-      "desc": "start v8 cpu profiler  "
+      "desc": "start v8 cpu profiler"
     }
   },
   "int": {
