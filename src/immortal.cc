@@ -346,8 +346,7 @@ void Immortal::Deserialize(const std::vector<size_t>* indexes) {
 
 void Immortal::StopAgent() {
   if (inspector_agent_ != nullptr) {
-    inspector_agent_->Stop();
-    inspector_agent_.reset();
+    inspector_agent_->StopInspectorIo();
   }
   /**
    * Shutdown watchdog thread before the diag channel and watchdogs destruction.
@@ -527,7 +526,6 @@ void Immortal::InitializeDefaultContext() {
 
 bool Immortal::Bootstrap() {
   HandleScope scope(isolate());
-  Context::Scope context_scope(context());
   if (!BootstrapLoader()) {
     return false;
   }
@@ -602,14 +600,18 @@ bool Immortal::BootstrapPureNativeModules() {
   return true;
 }
 
+bool Immortal::BootstrapInspector() {
+  inspector_agent_ = std::make_shared<inspector::InspectorAgent>(this);
+  std::string filename = commandline_parser_->script_filename();
+  return inspector_agent_->Start(filename);
+}
+
 void Immortal::BootstrapPerExecution() {
   HandleScope scope(isolate());
-  Context::Scope context_scope(context());
-  inspector_agent_ = std::make_shared<inspector::InspectorAgent>(this);
   BootstrapContextPerExecution();
 }
 
-void Immortal::BootstrapAgent(const std::string& script_filename) {
+void Immortal::BootstrapAgent() {
   TRACE_EVENT0(TRACING_CATEGORY_AWORKER1(main), "BootstrapAgent");
 
   watchdog_ = std::make_unique<Watchdog>();
@@ -626,7 +628,8 @@ void Immortal::BootstrapAgent(const std::string& script_filename) {
   }
 
   if (commandline_parser()->mixin_inspect()) {
-    inspector_agent_->Start(script_filename);
+    CHECK(inspector_agent_ != nullptr);
+    inspector_agent_->StartInspectorIo();
   }
 
   /**
@@ -638,7 +641,6 @@ void Immortal::BootstrapAgent(const std::string& script_filename) {
   watchdog_->StartIfNeeded();
 
   if (commandline_parser()->inspect_brk()) {
-    CHECK(inspector_agent_ != nullptr);
     inspector_agent_->WaitForConnect();
   }
 }
@@ -708,7 +710,6 @@ void Immortal::BootstrapContextPerExecution() {
 
 v8::Maybe<bool> Immortal::Evaluate(const char* module) {
   HandleScope scope(isolate());
-  Context::Scope context_scope(context());
 
   NativeModuleResult result;
   Local<Function> func =

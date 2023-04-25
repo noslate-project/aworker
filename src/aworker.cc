@@ -293,9 +293,8 @@ void AworkerMainInstance::Initialize(IsolateCreationMode mode) {
 
 void AworkerMainInstance::WarmForkWithUserScript() {
   Isolate* isolate = immortal_->isolate();
-  std::string script_filename = cli_->script_filename();
 
-  immortal_->BootstrapAgent(script_filename);
+  immortal_->BootstrapAgent();
   per_process::DebugPrintCurrentTime("bootstrapped agent");
 
   CHECK_EQ(immortal_->StartForkExecution().ToChecked(), true);
@@ -332,6 +331,8 @@ int AworkerMainInstance::Start() {
   {
     HandleScope scope(isolate);
 
+    // Bootstrap inspector before per-execution scripts.
+    immortal_->BootstrapInspector();
     immortal_->BootstrapPerExecution();
 
     if (immortal_->startup_fork_mode() == StartupForkMode::kForkUserland) {
@@ -339,9 +340,8 @@ int AworkerMainInstance::Start() {
     } else if (immortal_->startup_fork_mode() == StartupForkMode::kFork) {
       WarmFork();
     }
-    std::string script_filename = cli_->script_filename();
 
-    immortal_->BootstrapAgent(script_filename);
+    immortal_->BootstrapAgent();
     per_process::DebugPrintCurrentTime("bootstrapped agent");
 
     if (cli_->cpu_prof()) {
