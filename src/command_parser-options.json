@@ -65,6 +65,9 @@
     "report-compact": {
       "desc": "generate diagnostic reports in compact format"
     },
+    "threaded-platform": {
+      "desc": "enable experimental threaded platform"
+    },
     "version": {
       "short": "v",
       "desc": "print version string"

@@ -4,21 +4,21 @@
 /**
  * Design of Aworker Platform and it's tasks:
  *
- * + PlatformTaskRunner:
+ * + SameThreadTaskRunner:
  *   * PostNonNestableTask -> `PostTask`
  *   * PostNonNestableDelayedTask -> `PostDelayedTask`
  *   * PostTask:
  *     1. Push the task to `task_runner._tasks`;
- *     2. Create the timer with `PlatformTaskRunner::ImmediateProcessor` if
+ *     2. Create the timer with `SameThreadTaskRunner::ImmediateProcessor` if
  *        `task_runner._immediate_task_timer` is not set and then set it;
- *     3. At `PlatformTaskRunner::ImmediateProcessor`, swap
+ *     3. At `SameThreadTaskRunner::ImmediateProcessor`, swap
  * `task_runner._tasks`. Then go through the old list to run previously posted
  * tasks.
  *   * PostDelayedTask:
  *     1. Push this task to `task_runner._delayed_tasks` priority queue;
- *     2. Create the timer with `PlatformTaskRunner::ImmediateProcessor` if
+ *     2. Create the timer with `SameThreadTaskRunner::ImmediateProcessor` if
  *        `task_runner._immediate_task_timer` is not set and then set it;
- *     3. At `PlatformTaskRunner::ImmediateProcessor`, drain deadline met
+ *     3. At `SameThreadTaskRunner::ImmediateProcessor`, drain deadline met
  * delayed tasks queue items.
  */
 
@@ -60,13 +60,13 @@ struct PlatformDelayedTaskCompare {
   }
 };
 
-class PlatformTaskRunner : public v8::TaskRunner {
+class SameThreadTaskRunner : public v8::TaskRunner {
  public:
   static void ImmediateProcessor(uv_timer_t* timer);
 
  public:
-  explicit PlatformTaskRunner(uv_loop_t* loop);
-  virtual ~PlatformTaskRunner();
+  explicit SameThreadTaskRunner(uv_loop_t* loop);
+  virtual ~SameThreadTaskRunner();
 
   void PostTask(std::unique_ptr<v8::Task> task) override;
   void PostNonNestableTask(std::unique_ptr<v8::Task> task) override;
@@ -101,7 +101,12 @@ class PlatformTaskRunner : public v8::TaskRunner {
 
 class AworkerPlatform : public v8::Platform {
  public:
-  AworkerPlatform();
+  enum ThreadMode {
+    kSingleThread,
+    kMultiThread,
+  };
+
+  explicit AworkerPlatform(ThreadMode thread_mode);
   AworkerPlatform(const AworkerPlatform&) = delete;
   ~AworkerPlatform() noexcept override;
 
@@ -111,9 +116,6 @@ class AworkerPlatform : public v8::Platform {
     ~Scope();
 
     Scope(const Scope&) = delete;
-
-   private:
-    AworkerPlatform* platform_;
   };
 
   void CallOnWorkerThread(std::unique_ptr<v8::Task> task) override;
@@ -140,7 +142,7 @@ class AworkerPlatform : public v8::Platform {
 
   inline TraceAgent* trace_agent() { return trace_agent_.get(); }
 
-  inline PlatformTaskRunner* task_runner() { return task_runner_.get(); }
+  inline SameThreadTaskRunner* task_runner() { return task_runner_.get(); }
 
   inline uv_loop_t* loop() { return &loop_; }
 
@@ -149,11 +151,13 @@ class AworkerPlatform : public v8::Platform {
   }
 
  private:
+  ThreadMode thread_mode_;
   uv_loop_t loop_;
   std::unique_ptr<TraceAgent> trace_agent_;
   std::unique_ptr<v8::TracingController::TraceStateObserver>
       trace_state_observer_;
-  std::shared_ptr<PlatformTaskRunner> task_runner_;
+  std::shared_ptr<SameThreadTaskRunner> task_runner_;
+  std::unique_ptr<v8::Platform> worker_thread_platform_;
   std::shared_ptr<v8::ArrayBuffer::Allocator> array_buffer_allocator_;
 };
 

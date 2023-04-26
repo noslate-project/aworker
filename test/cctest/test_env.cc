@@ -6,7 +6,8 @@ void AworkerEnvironment::SetUp() {
   int argc = 1;
   char* argv[] = {"aworker"};
   aworker::InitializeOncePerProcess(&argc, argv);
-  platform_ = std::make_unique<aworker::AworkerPlatform>();
+  platform_ = std::make_unique<aworker::AworkerPlatform>(
+      aworker::AworkerPlatform::kSingleThread);
   v8::V8::InitializePlatform(platform_.get());
   v8::V8::Initialize();
 }
