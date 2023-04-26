@@ -71,6 +71,9 @@
     "version": {
       "short": "v",
       "desc": "print version string"
+    },
+    "cpu-prof": {
+      "desc": "start v8 cpu profiler"
     }
   },
   "int": {
