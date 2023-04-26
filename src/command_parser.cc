@@ -63,6 +63,11 @@ void CommandlineParser::Evaluate() {
     exit(0);
   }
 
+  if (mode() != "normal" && threaded_platform()) {
+    fprintf(stderr, "Can not run threaded platform with seed mode\n");
+    exit(4);
+  }
+
   if (mode() != "normal" && mode() != "seed" && mode() != "seed-userland") {
     fprintf(stderr,
             "%s: run mode should be normal or seed, but got %s.\n",

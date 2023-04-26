@@ -4,6 +4,8 @@
 #include "aworker_platform.h"
 #include "aworker_version.h"
 
+using aworker::AworkerPlatform;
+
 int main(int argc, char** argv) {
   setvbuf(stdout, nullptr, _IONBF, 0);
   setvbuf(stderr, nullptr, _IONBF, 0);
@@ -23,11 +25,14 @@ int main(int argc, char** argv) {
 
   // CommandlineParser::Evaluate() may exit(0) if --help
   CHECK(cli->Evaluate(aworker::DEFAULT_PARSER_NAME));
+  aworker::EvaluatePerProcessArgv(cli.get());
 
   int exit_code = 0;
   {
-    aworker::AworkerPlatform platform;
-    aworker::AworkerPlatform::Scope use_platform(&platform);
+    AworkerPlatform platform(cli->threaded_platform()
+                                 ? AworkerPlatform::kMultiThread
+                                 : AworkerPlatform::kSingleThread);
+    AworkerPlatform::Scope use_platform(&platform);
     v8::V8::Initialize();
     {
       bool build_snapshot = cli->build_snapshot();

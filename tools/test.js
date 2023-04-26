@@ -11,12 +11,15 @@ const { WptHostedAworkerRunner } = require('../test/common/wpt-hosted');
 
 const testRoot = path.resolve(__dirname, '../test');
 
+const nodeRunners = [ 'node', 'pseudo-tty' ];
 class TestCfg {
   constructor(name, spec) {
     this.name = name;
     this.skip = !!spec.skip;
     this.runner = spec.runner;
     this.execArgv = spec.execArgv;
+    // Node.js doesn't support --threaded-platform option.
+    this.singleThreadPlatform = spec.singleThreadPlatform || nodeRunners.includes(spec.runner);
     this.path = path.resolve(testRoot, name);
   }
 }
@@ -29,6 +32,38 @@ const runners = {
   'pseudo-tty': PseudoTtyRunner,
   'wpt-hosted': WptHostedAworkerRunner,
 };
+
+async function run(specs, files, threaded) {
+  const failures = [];
+  for (const spec of specs) {
+    if (spec.skip) {
+      console.log(`# Spec '${spec.name}' was skipped`);
+      continue;
+    }
+    const Runner = runners[spec.runner];
+    if (Runner == null) {
+      throw new Error(`unrecognizable runner ${spec.runner}`);
+    }
+    const r = new Runner(spec.name);
+    const execArgv = [ ...(spec.execArgv ?? []) ];
+    // Skip threaded platform test if the spec is forced to be single threaded.
+    if (threaded && spec.singleThreadPlatform) {
+      continue;
+    }
+    if (threaded) {
+      execArgv.push('--threaded-platform');
+    }
+    r.appendExecArgv(execArgv);
+    r.load();
+    if (files.length) {
+      failures.push(...await r.runJsTests(files));
+    } else {
+      failures.push(...await r.runJsTests());
+    }
+  }
+
+  return failures;
+}
 
 async function main(argv = []) {
   let category;
@@ -74,26 +109,8 @@ async function main(argv = []) {
   }
 
   const failures = [];
-  for (const spec of specs) {
-    if (spec.skip) {
-      console.log(`# Spec '${spec.name}' was skipped`);
-      continue;
-    }
-    const Runner = runners[spec.runner];
-    if (Runner == null) {
-      throw new Error(`unrecognizable runner ${spec.runner}`);
-    }
-    const r = new Runner(spec.name);
-    if (spec.execArgv) {
-      r.setExecArgv(spec.execArgv);
-    }
-    r.load();
-    if (files.length) {
-      failures.push(...await r.runJsTests(files));
-    } else {
-      failures.push(...await r.runJsTests());
-    }
-  }
+  failures.push(...await run(specs, files, false));
+  failures.push(...await run(specs, files, true));
   if (failures.length > 0) {
     process.exitCode = 1;
   }
