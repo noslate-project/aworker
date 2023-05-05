@@ -757,15 +757,17 @@ void NoslatedDataChannel::CallDaprBinding(unique_ptr<RpcController> controller,
           return;
         }
         per_process::Debug(DebugCategory::AGENT_CHANNEL,
-                           "dapr binding response: status(%d), body(%s)\n",
+                           "dapr binding response: status(%d), body(%s), metadata(%s)\n",
                            res->status(),
-                           res->data().c_str());
+                           res->data().c_str(), res->metadata().c_str());
 
         auto res_managed = res.release();
         Local<Object> params = Object::New(isolate);
         Local<String> key_status = OneByteString(isolate, "status");
         Local<String> key_body = OneByteString(isolate, "body");
+        Local<String> key_metadata = OneByteString(isolate, "metadata");
         Local<Number> status = Number::New(isolate, res_managed->status());
+        Local<String> metadata = String::NewFromUtf8(isolate, res_managed->metadata().c_str()).ToLocalChecked();
         auto backing_store = ArrayBuffer::NewBackingStore(
             const_cast<char*>(res_managed->data().c_str()),
             res_managed->data().length(),
@@ -778,6 +780,7 @@ void NoslatedDataChannel::CallDaprBinding(unique_ptr<RpcController> controller,
         auto body = ArrayBuffer::New(isolate, move(backing_store));
         params->Set(context, key_status, status).Check();
         params->Set(context, key_body, body).Check();
+        params->Set(context, key_metadata, metadata).Check();
 
         Callback(req_id, v8::Undefined(isolate), params);
       });

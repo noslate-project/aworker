@@ -165,6 +165,7 @@ message DaprBindingRequestMessage {
 message DaprBindingResponseMessage {
   required int32 status = 1;
   required bytes data = 2;
+  optional string metadata = 3;
 }
 
 /**
