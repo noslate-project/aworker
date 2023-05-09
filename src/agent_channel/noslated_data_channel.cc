@@ -716,19 +716,36 @@ void NoslatedDataChannel::CallDaprBinding(unique_ptr<RpcController> controller,
   Local<String> name =
       params->Get(context, key_name).ToLocalChecked().As<String>();
   String::Utf8Value name_utf8(isolate, name);
-  Local<String> metadata =
-      params->Get(context, key_metadata).ToLocalChecked().As<String>();
-  String::Utf8Value metadata_utf8(isolate, metadata);
   Local<String> operation =
       params->Get(context, key_operation).ToLocalChecked().As<String>();
   String::Utf8Value operation_utf8(isolate, operation);
   Local<Uint8Array> body =
       params->Get(context, key_body).ToLocalChecked().As<Uint8Array>();
 
+  Local<Object> metadata =
+      params->Get(context, key_metadata).ToLocalChecked().As<Object>();
+  Local<Array> property_names =
+      metadata->GetPropertyNames(context).ToLocalChecked();
+
   auto req = make_unique<DaprBindingRequestMessage>();
   req->set_name(*name_utf8);
-  req->set_metadata(*metadata_utf8);
   req->set_operation(*operation_utf8);
+
+  for (uint32_t i = 0; i < property_names->Length(); i++) {
+    Local<String> key =
+        property_names->Get(context, i).ToLocalChecked().As<String>();
+    Local<String> value =
+        metadata->Get(context, key).ToLocalChecked().As<String>();
+
+    String::Utf8Value key_utf8(isolate, key);
+    String::Utf8Value value_utf8(isolate, value);
+
+    auto pair = req->add_metadata();
+
+    pair->set_key(*key_utf8);
+    pair->set_value(*value_utf8);
+  }
+
   if (body->HasBuffer()) {
     req->set_data(
         static_cast<uint8_t*>(body->Buffer()->GetBackingStore()->Data()) +
@@ -756,10 +773,12 @@ void NoslatedDataChannel::CallDaprBinding(unique_ptr<RpcController> controller,
                    v8::Undefined(isolate));
           return;
         }
-        per_process::Debug(DebugCategory::AGENT_CHANNEL,
-                           "dapr binding response: status(%d), body(%s), metadata_size(%d)\n",
-                           res->status(),
-                           res->data().c_str(), res->metadata().size());
+        per_process::Debug(
+            DebugCategory::AGENT_CHANNEL,
+            "dapr binding response: status(%d), body(%s), metadata_size(%d)\n",
+            res->status(),
+            res->data().c_str(),
+            res->metadata().size());
 
         auto res_managed = res.release();
         Local<Object> params = Object::New(isolate);
@@ -774,8 +793,11 @@ void NoslatedDataChannel::CallDaprBinding(unique_ptr<RpcController> controller,
         for (int idx = 0; idx < res_metadata.size(); idx++) {
           auto pair = res_metadata.Get(idx);
 
-          Local<String> key = String::NewFromUtf8(isolate, pair.key().c_str()).ToLocalChecked();
-          Local<String> value = String::NewFromUtf8(isolate, pair.value().c_str()).ToLocalChecked();
+          Local<String> key =
+              String::NewFromUtf8(isolate, pair.key().c_str()).ToLocalChecked();
+          Local<String> value =
+              String::NewFromUtf8(isolate, pair.value().c_str())
+                  .ToLocalChecked();
 
           metadata->Set(context, key, value).Check();
         }
