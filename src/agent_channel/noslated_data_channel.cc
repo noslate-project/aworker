@@ -757,9 +757,9 @@ void NoslatedDataChannel::CallDaprBinding(unique_ptr<RpcController> controller,
           return;
         }
         per_process::Debug(DebugCategory::AGENT_CHANNEL,
-                           "dapr binding response: status(%d), body(%s), metadata(%s)\n",
+                           "dapr binding response: status(%d), body(%s), metadata_size(%d)\n",
                            res->status(),
-                           res->data().c_str(), res->metadata().c_str());
+                           res->data().c_str(), res->metadata().size());
 
         auto res_managed = res.release();
         Local<Object> params = Object::New(isolate);
@@ -767,7 +767,19 @@ void NoslatedDataChannel::CallDaprBinding(unique_ptr<RpcController> controller,
         Local<String> key_body = OneByteString(isolate, "body");
         Local<String> key_metadata = OneByteString(isolate, "metadata");
         Local<Number> status = Number::New(isolate, res_managed->status());
-        Local<String> metadata = String::NewFromUtf8(isolate, res_managed->metadata().c_str()).ToLocalChecked();
+        Local<Object> metadata = Object::New(isolate);
+
+        auto res_metadata = res_managed->metadata();
+
+        for (int idx = 0; idx < res_metadata.size(); idx++) {
+          auto pair = res_metadata.Get(idx);
+
+          Local<String> key = String::NewFromUtf8(isolate, pair.key().c_str()).ToLocalChecked();
+          Local<String> value = String::NewFromUtf8(isolate, pair.value().c_str()).ToLocalChecked();
+
+          metadata->Set(context, key, value).Check();
+        }
+
         auto backing_store = ArrayBuffer::NewBackingStore(
             const_cast<char*>(res_managed->data().c_str()),
             res_managed->data().length(),
@@ -777,6 +789,7 @@ void NoslatedDataChannel::CallDaprBinding(unique_ptr<RpcController> controller,
               delete res_managed;
             },
             res_managed);
+
         auto body = ArrayBuffer::New(isolate, move(backing_store));
         params->Set(context, key_status, status).Check();
         params->Set(context, key_body, body).Check();
