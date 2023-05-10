@@ -187,7 +187,7 @@ AworkerPlatform::AworkerPlatform(ThreadMode thread_mode)
       v8::ArrayBuffer::Allocator::NewDefaultAllocator());
 
   if (thread_mode == kMultiThread) {
-    // TODO: Proper worker thread task runner support.
+    // TODO(chengzhong.wcz): Proper worker thread task runner support.
     worker_thread_platform_ = v8::platform::NewDefaultPlatform();
   }
 }
