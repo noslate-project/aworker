@@ -86,6 +86,11 @@
       "meta": "<MILLISECONDS>",
       "desc": "abort the process if the event loop latency reached the limit",
       "default": 0
+    },
+    "threaded-platform-pool-size": {
+      "meta": "<COUNT>",
+      "desc": "v8 platform thread pool size when --threaded-platform is enabled",
+      "default": 4
     }
   },
   "string": {
