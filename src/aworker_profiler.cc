@@ -115,9 +115,7 @@ void StopCpuProfiler(v8::Isolate* isolate, std::string t) {
           .ToLocalChecked();
   v8::CpuProfile* profile = cpu_profiler->StopProfiling(title);
 
-  Serialize(isolate,
-            profile,
-            *report::DiagnosticFilename("CPU", "cpuprofile"));
+  Serialize(isolate, profile, *report::DiagnosticFilename("CPU", "cpuprofile"));
 
   profile->Delete();
   cpu_profiler->Dispose();

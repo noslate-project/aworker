@@ -158,13 +158,14 @@ message DaprInvokeResponseMessage {
 
 message DaprBindingRequestMessage {
   required string name = 1;
-  required string metadata = 2;
+  repeated KeyValuePair metadata = 2;
   required string operation = 3;
   required bytes data = 4;
 }
 message DaprBindingResponseMessage {
   required int32 status = 1;
   required bytes data = 2;
+  repeated KeyValuePair metadata = 3;
 }
 
 /**
