@@ -1,6 +1,7 @@
 #include <cmath>
 
 #include "aworker_binding.h"
+#include "aworker_perf.h"
 #include "immortal.h"
 #include "tracing/trace_event.h"
 #include "util.h"
@@ -68,6 +69,13 @@ void DefineSignalConstants(Local<Object> target) {
   DEFINE_CONSTANT(target, SIGINT);
 }
 
+void DefineMilestonesConstants(Local<Object> target) {
+#define V(name, _)                                                             \
+  DEFINE_CONSTANT(target, AWORKER_PERFORMANCE_MILESTONE_##name);
+  AWORKER_PERFORMANCE_MILESTONES(V)
+#undef V
+}
+
 AWORKER_BINDING(Init) {
   Isolate* isolate = immortal->isolate();
   Local<Object> tracing_constants = Object::New(isolate);
@@ -77,6 +85,10 @@ AWORKER_BINDING(Init) {
   Local<Object> signals_constants = Object::New(isolate);
   CHECK(signals_constants->SetPrototype(context, v8::Null(isolate)).FromJust());
   DefineSignalConstants(signals_constants);
+
+  Local<Object> perf_milestones = Object::New(isolate);
+  CHECK(perf_milestones->SetPrototype(context, v8::Null(isolate)).FromJust());
+  DefineMilestonesConstants(perf_milestones);
 
   DEFINE_CONSTANT_NAME(
       exports, WorkerState::kSerialized, WORKER_STATE_SERIALIZED);
@@ -98,6 +110,9 @@ AWORKER_BINDING(Init) {
       .Check();
 
   exports->Set(context, OneByteString(isolate, "signals"), signals_constants)
+      .Check();
+
+  exports->Set(context, OneByteString(isolate, "milestones"), perf_milestones)
       .Check();
 }
 

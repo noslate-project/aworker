@@ -4,10 +4,12 @@
 #include "immortal.h"
 #include "uv.h"
 
+using v8::Array;
 using v8::BigInt;
 using v8::Context;
 using v8::FunctionCallbackInfo;
 using v8::HandleScope;
+using v8::Integer;
 using v8::Isolate;
 using v8::Local;
 using v8::Maybe;
@@ -52,7 +54,35 @@ AWORKER_METHOD(GetTimeOriginRelativeTimeStamp) {
                       MICROS_PER_MILLIS));
 }
 
+AWORKER_METHOD(MarkMilestone) {
+  CHECK_EQ(info.Length(), 1);
+  CHECK(info[0]->IsNumber());
+
+  Immortal* immortal = Immortal::GetCurrent(info);
+  Isolate* isolate = immortal->isolate();
+  PerformanceMilestone milestone = static_cast<PerformanceMilestone>(
+      info[0]->Int32Value(isolate->GetCurrentContext()).FromMaybe(0));
+  Mark(milestone);
+}
+
+AWORKER_METHOD(GetMilestonesTimeStamp) {
+  Isolate* isolate = info.GetIsolate();
+
+  Local<Array> milestones =
+      Array::New(isolate, AWORKER_PERFORMANCE_MILESTONE_INVALID);
+
+  for (size_t i = 0; i < AWORKER_PERFORMANCE_MILESTONE_INVALID; i++) {
+    milestones->Set(isolate->GetCurrentContext(),
+                    i,
+                    Number::New(isolate, per_process::milestones[i]));
+  }
+  info.GetReturnValue().Set(milestones);
+}
+
 AWORKER_BINDING(Init) {
+  immortal->SetFunctionProperty(exports, "markMilestone", MarkMilestone);
+  immortal->SetFunctionProperty(
+      exports, "getMilestonesTimestamp", GetMilestonesTimeStamp);
   immortal->SetFunctionProperty(exports, "hrtime", Hrtime);
   immortal->SetFunctionProperty(exports, "loopIdleTime", LoopIdleTime);
   immortal->SetFunctionProperty(exports, "getTimeOrigin", GetTimeOrigin);
@@ -64,8 +94,10 @@ AWORKER_BINDING(Init) {
 }
 
 AWORKER_EXTERNAL_REFERENCE(Init) {
+  registry->Register(MarkMilestone);
   registry->Register(Hrtime);
   registry->Register(LoopIdleTime);
+  registry->Register(GetMilestonesTimeStamp);
   registry->Register(GetTimeOrigin);
   registry->Register(GetTimeOriginTimeStamp);
   registry->Register(GetTimeOriginRelativeTimeStamp);

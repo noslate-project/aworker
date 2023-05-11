@@ -77,6 +77,10 @@ int64_t GenerateSeed() {
 char** InitializeOncePerProcess(int* argc, char** argv) {
   per_process::enabled_debug_list.Parse();
   RefreshLogLevel();
+  RefreshMilestones();
+
+  Mark(PerformanceMilestone::
+           AWORKER_PERFORMANCE_MILESTONE_INITIALIZE_PER_PROCESS);
   per_process::DebugPrintCurrentTime("initialize once per process");
 
   RegisterBindings();
@@ -212,6 +216,7 @@ void AworkerMainInstance::WarmFork() {
   TURF_PHD(turf_fork_wait, &rc, &argc, &argv);
   libc_override::RunChildHooks();
   RefreshTimeOrigin();
+  RefreshMilestones();
   RefreshLogLevel();
   per_process::enabled_debug_list.Parse();
   per_process::DebugPrintCurrentTime("just after fork");
@@ -236,6 +241,7 @@ void AworkerMainInstance::WarmFork() {
   aworker_v8::ResetRandomNumberGenerator(isolate_, context, GenerateSeed());
 
   platform_->EvaluateCommandlineOptions(cli_.get());
+  Mark(PerformanceMilestone::AWORKER_PERFORMANCE_MILESTONE_AFTER_FORK);
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(TRACING_CATEGORY_AWORKER1(main),
                                       "warmFork",
                                       TRACE_EVENT_SCOPE_THREAD,
@@ -300,7 +306,6 @@ void AworkerMainInstance::WarmForkWithUserScript() {
   Isolate* isolate = immortal_->isolate();
 
   immortal_->BootstrapAgent();
-  per_process::DebugPrintCurrentTime("bootstrapped agent");
 
   CHECK_EQ(immortal_->StartForkExecution().ToChecked(), true);
   {
@@ -347,6 +352,7 @@ int AworkerMainInstance::Start() {
     }
 
     immortal_->BootstrapAgent();
+    Mark(PerformanceMilestone::AWORKER_PERFORMANCE_MILESTONE_BOOTSTRAP_AGENT);
     per_process::DebugPrintCurrentTime("bootstrapped agent");
 
     if (cli_->cpu_prof()) {
@@ -358,6 +364,7 @@ int AworkerMainInstance::Start() {
 
   // 事件循环
   {
+    Mark(PerformanceMilestone::AWORKER_PERFORMANCE_MILESTONE_LOOP_START);
     // Disallow handles been created without local HandleScopes.
     SealHandleScope scope(isolate);
     uv_run(loop_, UV_RUN_DEFAULT);
