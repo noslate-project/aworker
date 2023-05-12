@@ -11,14 +11,12 @@ test(() => {
     'entryType',
     'startTime',
     'duration',
-    'loopStart',
-    'initializeProcess',
     'bootStrapTime',
-    'executeMain',
     'readScriptFile',
-    'cacheSourceMap',
     'parseScript',
     'evaluateScript',
+    'loopStart',
+    'evaluate',
     'afterFork',
     'idleTime',
   ]);
@@ -26,18 +24,21 @@ test(() => {
   assert_equals(timing.entryType, 'aworker');
 }, 'aworker milestones');
 
-test(() => {
-  const timing = getAworkerTiming();
+promise_test(async () => {
+  const timing = await new Promise(resolve => {
+    setTimeout(() => {
+      resolve(getAworkerTiming());
+    }, 0);
+  });
   const keys = [
-    'initializeProcess',
     'bootStrapTime',
-    'executeMain',
     'readScriptFile',
-    'cacheSourceMap',
     'parseScript',
     'evaluateScript',
+    'loopStart',
+    'duration',
   ];
-  console.log(timing);
+
   for (let i = 0; i < keys.length; i++) {
     if (i === 0) {
       assert_greater_than(timing[keys[i]], 0);

@@ -10,16 +10,13 @@ double getTimeOriginTimestamp();
 void RefreshTimeOrigin();
 
 #define AWORKER_PERFORMANCE_MILESTONES(V)                                      \
-  V(INITIALIZE_PER_PROCESS, "per_rocess")                                      \
   V(AWORKER_START, "aworker_start")                                            \
-  V(V8_START, "v8_start")                                                      \
   V(LOOP_START, "loop_start")                                                  \
   V(BOOTSTRAP_AGENT, "bootstrap_agent")                                        \
-  V(EXECUTE_MAIN, "execute_main")                                              \
-  V(CACHE_SOURCE_MAP, "cache_source_map")                                      \
   V(READ_SCRIPT_FILE, "read_script_file")                                      \
   V(PARSE_SCRIPT, "parse_script")                                              \
   V(EVALUATE_SCRIPT, "evaluate_script")                                        \
+  V(EVALUATE, "evaluate")                                                      \
   V(AFTER_FORK, "after_fork")
 
 enum PerformanceMilestone {

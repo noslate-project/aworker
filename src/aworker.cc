@@ -79,8 +79,6 @@ char** InitializeOncePerProcess(int* argc, char** argv) {
   RefreshLogLevel();
   RefreshMilestones();
 
-  Mark(PerformanceMilestone::
-           AWORKER_PERFORMANCE_MILESTONE_INITIALIZE_PER_PROCESS);
   per_process::DebugPrintCurrentTime("initialize once per process");
 
   RegisterBindings();

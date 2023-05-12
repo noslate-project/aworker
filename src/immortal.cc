@@ -736,8 +736,6 @@ v8::Maybe<bool> Immortal::StartForkExecution() {
 }
 
 v8::Maybe<bool> Immortal::StartExecution() {
-  Mark(aworker::PerformanceMilestone::
-           AWORKER_PERFORMANCE_MILESTONE_EXECUTE_MAIN);
   per_process::DebugPrintCurrentTime("execute main");
   TRACE_EVENT0(TRACING_CATEGORY_AWORKER1(main), "FirstFrame");
 
