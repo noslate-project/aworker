@@ -148,15 +148,23 @@ TEST(AworkerPlatformForegroundTaskRunner, Interwined) {
   runner->PostTask(std::make_unique<TestTask>(&count, &done, runner.get()));
   // Timeline:
   // |- 100ms
+  // |- <async>
   // |- immediate task
   // |- 1s
+  // |- <timer>
+  // |- immediate task
+  // |- delayed task
+  // |- <async>
+  // |- immediate task
+  // |- 100ms
+  // |- <timer>
   // |- immediate task
   // |- delayed task
   // |- 100ms
-  // |- immediate task
+  // |- <no tasks>
+  // |- 100ms
+  // |- <timer>
   // |- delayed task
-  // |
-  // |- immediate task
 
   usleep(_100ms);
   uv_run(loop, UV_RUN_NOWAIT);
@@ -166,19 +174,19 @@ TEST(AworkerPlatformForegroundTaskRunner, Interwined) {
   sleep(1);
   uv_run(loop, UV_RUN_NOWAIT);
   // both delayed task and immediate task were executed.
-  EXPECT_EQ(count, 3);
+  EXPECT_EQ(count, 4);
 
   done = true;
   // task runner re-scheduled timer has to be at least 1ms later.
   usleep(_100ms);
   uv_run(loop, UV_RUN_NOWAIT);
   // both delayed task and immediate task were executed.
-  EXPECT_EQ(count, 5);
+  EXPECT_EQ(count, 6);
 
   // no tasks should be posted for now.
   usleep(_100ms);
   uv_run(loop, UV_RUN_NOWAIT);
-  EXPECT_EQ(count, 5);
+  EXPECT_EQ(count, 6);
 
   // post a new task after the runner has been drained.
   runner->PostDelayedTask(
@@ -186,7 +194,7 @@ TEST(AworkerPlatformForegroundTaskRunner, Interwined) {
       0.01 /* 10ms */);
   usleep(_100ms);
   uv_run(loop, UV_RUN_NOWAIT);
-  EXPECT_EQ(count, 6);
+  EXPECT_EQ(count, 7);
 
   // close the ref-ed handle so that the disposure of aworker platform will
   // not loop forever

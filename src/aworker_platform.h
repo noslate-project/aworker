@@ -4,26 +4,27 @@
 /**
  * Design of Aworker Platform and it's tasks:
  *
- * + SameThreadTaskRunner:
+ * + ForegroundTaskRunner:
  *   * PostNonNestableTask -> `PostTask`
  *   * PostNonNestableDelayedTask -> `PostDelayedTask`
  *   * PostTask:
  *     1. Push the task to `task_runner._tasks`;
- *     2. Create the timer with `SameThreadTaskRunner::ImmediateProcessor` if
+ *     2. Create the timer with `ForegroundTaskRunner::ImmediateProcessor` if
  *        `task_runner._immediate_task_timer` is not set and then set it;
- *     3. At `SameThreadTaskRunner::ImmediateProcessor`, swap
+ *     3. At `ForegroundTaskRunner::ImmediateProcessor`, swap
  * `task_runner._tasks`. Then go through the old list to run previously posted
  * tasks.
  *   * PostDelayedTask:
  *     1. Push this task to `task_runner._delayed_tasks` priority queue;
- *     2. Create the timer with `SameThreadTaskRunner::ImmediateProcessor` if
+ *     2. Create the timer with `ForegroundTaskRunner::ImmediateProcessor` if
  *        `task_runner._immediate_task_timer` is not set and then set it;
- *     3. At `SameThreadTaskRunner::ImmediateProcessor`, drain deadline met
+ *     3. At `ForegroundTaskRunner::ImmediateProcessor`, drain deadline met
  * delayed tasks queue items.
  */
 
 #include <list>
 #include <queue>
+#include <mutex>
 
 #include "command_parser.h"
 #include "libplatform/libplatform.h"
@@ -60,13 +61,9 @@ struct PlatformDelayedTaskCompare {
   }
 };
 
-class SameThreadTaskRunner : public v8::TaskRunner {
+class ForegroundTaskRunner final : public v8::TaskRunner {
  public:
-  static void ImmediateProcessor(uv_timer_t* timer);
-
- public:
-  explicit SameThreadTaskRunner(uv_loop_t* loop);
-  virtual ~SameThreadTaskRunner();
+  static std::shared_ptr<ForegroundTaskRunner> New(uv_loop_t* loop);
 
   void PostTask(std::unique_ptr<v8::Task> task) override;
   void PostNonNestableTask(std::unique_ptr<v8::Task> task) override;
@@ -76,14 +73,10 @@ class SameThreadTaskRunner : public v8::TaskRunner {
   inline void PostIdleTask(std::unique_ptr<v8::IdleTask> task) override {
     UNREACHABLE();
   };
-  inline bool IdleTasksEnabled() override { return false; };
 
+  inline bool IdleTasksEnabled() override { return false; };
   inline bool NonNestableTasksEnabled() const override { return true; }
   inline bool NonNestableDelayedTasksEnabled() const override { return true; }
-
- public:
-  void ResetImmediateTaskTimer(int64_t timer);
-  int64_t PostImmediateTimer(uint64_t timeout = 0);
 
   void DrainTasks();
 
@@ -92,11 +85,22 @@ class SameThreadTaskRunner : public v8::TaskRunner {
   using DelayedTaskQueue = std::priority_queue<DelayedTasksPtr,
                                                std::vector<DelayedTasksPtr>,
                                                PlatformDelayedTaskCompare>;
-  uv_loop_t* loop_;
-  uv_timer_t* timer_;
+
+  static void Delete(ForegroundTaskRunner* it);
+  static void TimerProcessor(uv_timer_t* timer);
+  static void ImmediateProcessor(uv_async_t* async);
+
+  explicit ForegroundTaskRunner(uv_loop_t* loop);
+  ~ForegroundTaskRunner() override;
+
+  void RunTasks();
+
+  uv_timer_t timer_;
+  uv_async_t async_;
+
+  std::mutex queue_mutex_;
   DelayedTaskQueue delayed_tasks_;
   std::list<std::unique_ptr<PlatformTask>> tasks_;
-  uint64_t next_deadline_;
 };
 
 class AworkerPlatform : public v8::Platform {
@@ -142,7 +146,7 @@ class AworkerPlatform : public v8::Platform {
 
   inline TraceAgent* trace_agent() { return trace_agent_.get(); }
 
-  inline SameThreadTaskRunner* task_runner() { return task_runner_.get(); }
+  inline ForegroundTaskRunner* task_runner() { return task_runner_.get(); }
 
   inline uv_loop_t* loop() { return &loop_; }
 
@@ -156,7 +160,7 @@ class AworkerPlatform : public v8::Platform {
   std::unique_ptr<TraceAgent> trace_agent_;
   std::unique_ptr<v8::TracingController::TraceStateObserver>
       trace_state_observer_;
-  std::shared_ptr<SameThreadTaskRunner> task_runner_;
+  std::shared_ptr<ForegroundTaskRunner> task_runner_;
   std::unique_ptr<v8::Platform> worker_thread_platform_;
   std::shared_ptr<v8::ArrayBuffer::Allocator> array_buffer_allocator_;
 };
