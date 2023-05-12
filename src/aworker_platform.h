@@ -106,7 +106,7 @@ class AworkerPlatform : public v8::Platform {
     kMultiThread,
   };
 
-  explicit AworkerPlatform(ThreadMode thread_mode);
+  explicit AworkerPlatform(ThreadMode thread_mode, int thread_pool_size = 0);
   AworkerPlatform(const AworkerPlatform&) = delete;
   ~AworkerPlatform() noexcept override;
 
