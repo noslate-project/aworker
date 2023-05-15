@@ -151,6 +151,7 @@
       'lib/kv_storage.js',
       'lib/navigator.js',
       'lib/path.js',
+      'lib/performance/aworker_timing.js',
       'lib/performance/observer.js',
       'lib/performance/performance_entry.js',
       'lib/performance/performance.js',
