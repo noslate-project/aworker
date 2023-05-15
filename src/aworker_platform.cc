@@ -204,13 +204,6 @@ AworkerPlatform::~AworkerPlatform() {
   CheckedUvLoopClose(&loop_);
 }
 
-int AworkerPlatform::NumberOfWorkerThreads() {
-  if (thread_mode_) {
-    return worker_thread_platform_->NumberOfWorkerThreads();
-  }
-  return 0;
-}
-
 void AworkerPlatform::CallOnWorkerThread(unique_ptr<v8::Task> task) {
   CHECK_EQ(thread_mode_, kMultiThread);
   CHECK_NOT_NULL(worker_thread_platform_);

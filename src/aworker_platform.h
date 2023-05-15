@@ -131,7 +131,7 @@ class AworkerPlatform : public v8::Platform {
 
   v8::TracingController* GetTracingController() override;
 
-  int NumberOfWorkerThreads() override;
+  inline int NumberOfWorkerThreads() override { return 0; }
   inline std::shared_ptr<v8::TaskRunner> GetForegroundTaskRunner(
       v8::Isolate* isolate) override {
     return task_runner_;

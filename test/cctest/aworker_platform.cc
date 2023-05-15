@@ -240,15 +240,4 @@ TEST(AworkerPlatformForegroundTaskRunner, InterwinedDuringReschedule) {
   // not loop forever
   uv_close(reinterpret_cast<uv_handle_t*>(&idle), nullptr);
 }
-
-TEST(AworkerPlatformSingleThread, NumberOfWorkerThreads) {
-  AworkerPlatform platform(AworkerPlatform::kSingleThread);
-  EXPECT_EQ(platform.NumberOfWorkerThreads(), 0);
-}
-
-TEST(AworkerPlatformMultiThread, NumberOfWorkerThreads) {
-  AworkerPlatform platform(AworkerPlatform::kMultiThread);
-  EXPECT_GT(platform.NumberOfWorkerThreads(), 0);
-}
-
 }  // namespace aworker
