@@ -263,8 +263,8 @@ class Runner {
    * Sets the exec argv passed to the worker.
    * @param {string[]} execArgv -
    */
-  appendExecArgv(execArgv) {
-    this.execArgv.push(...execArgv);
+  setExecArgv(execArgv) {
+    this.execArgv = execArgv;
   }
 
   /**

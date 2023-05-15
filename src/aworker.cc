@@ -103,6 +103,11 @@ char** InitializeOncePerProcess(int* argc, char** argv) {
    * implications.
    */
   V8::SetFlagsFromCommandLine(argc, argv, true);
+  /**
+   * Disable all known concurrent/parallel tasks to ensure all tasks are run on
+   * JavaScript thread and no worker thread tasks.
+   */
+  V8::SetFlagsFromString(v8_flags());
 
   if (help_count) {
     argv[*argc] = help_ptr;
@@ -110,16 +115,6 @@ char** InitializeOncePerProcess(int* argc, char** argv) {
   }
 
   return argv;
-}
-
-void EvaluatePerProcessArgv(CommandlineParserGroup* cli) {
-  if (!cli->threaded_platform()) {
-    /**
-     * Disable all known concurrent/parallel tasks to ensure all tasks are run
-     * on JavaScript thread and no worker thread tasks.
-     */
-    V8::SetFlagsFromString(v8_flags());
-  }
 }
 
 bool TearDownOncePerProcess() {

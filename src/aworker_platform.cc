@@ -7,7 +7,6 @@
 #include "metadata.h"
 #include "tracing/trace_event.h"
 #include "tracing/traced_value.h"
-#include "util.h"
 #include "uv.h"
 
 #ifdef __APPLE__
@@ -81,9 +80,8 @@ class AworkerTraceStateObserver
   v8::TracingController* controller_;
 };
 
-void SameThreadTaskRunner::ImmediateProcessor(uv_timer_t* handle) {
-  SameThreadTaskRunner* runner =
-      static_cast<SameThreadTaskRunner*>(handle->data);
+void PlatformTaskRunner::ImmediateProcessor(uv_timer_t* handle) {
+  PlatformTaskRunner* runner = static_cast<PlatformTaskRunner*>(handle->data);
 
   runner->DrainTasks();
 
@@ -106,7 +104,7 @@ void SameThreadTaskRunner::ImmediateProcessor(uv_timer_t* handle) {
   uv_timer_start(runner->timer_, ImmediateProcessor, next_timeout, 0);
 }
 
-void SameThreadTaskRunner::DrainTasks() {
+void PlatformTaskRunner::DrainTasks() {
   uint64_t now = now_in_ms();
   std::list<std::unique_ptr<PlatformTask>> tasks;
   tasks_.swap(tasks);
@@ -124,7 +122,7 @@ void SameThreadTaskRunner::DrainTasks() {
   }
 }
 
-SameThreadTaskRunner::SameThreadTaskRunner(uv_loop_t* loop)
+PlatformTaskRunner::PlatformTaskRunner(uv_loop_t* loop)
     : loop_(loop), timer_(new uv_timer_t()), next_deadline_(0) {
   uv_timer_init(loop, timer_);
   uv_unref(reinterpret_cast<uv_handle_t*>(timer_));
@@ -133,14 +131,14 @@ SameThreadTaskRunner::SameThreadTaskRunner(uv_loop_t* loop)
   next_deadline_--;
 }
 
-SameThreadTaskRunner::~SameThreadTaskRunner() {
+PlatformTaskRunner::~PlatformTaskRunner() {
   uv_close(reinterpret_cast<uv_handle_t*>(timer_), [](uv_handle_t* handle) {
     uv_timer_t* timer = reinterpret_cast<uv_timer_t*>(handle);
     delete timer;
   });
 }
 
-void SameThreadTaskRunner::PostTask(unique_ptr<v8::Task> task) {
+void PlatformTaskRunner::PostTask(unique_ptr<v8::Task> task) {
   uint64_t deadline = now_in_ms();
   tasks_.push_back(std::make_unique<PlatformTask>(move(task)));
 
@@ -150,8 +148,8 @@ void SameThreadTaskRunner::PostTask(unique_ptr<v8::Task> task) {
   }
 }
 
-void SameThreadTaskRunner::PostDelayedTask(unique_ptr<v8::Task> task,
-                                           double delay) {
+void PlatformTaskRunner::PostDelayedTask(unique_ptr<v8::Task> task,
+                                         double delay) {
   uint64_t now = now_in_ms();
   uint64_t deadline = now + std::llround(delay * 1000);
   delayed_tasks_.push(
@@ -163,20 +161,19 @@ void SameThreadTaskRunner::PostDelayedTask(unique_ptr<v8::Task> task,
   }
 }
 
-void SameThreadTaskRunner::PostNonNestableTask(unique_ptr<v8::Task> task) {
+void PlatformTaskRunner::PostNonNestableTask(unique_ptr<v8::Task> task) {
   PostTask(move(task));
 }
 
-void SameThreadTaskRunner::PostNonNestableDelayedTask(unique_ptr<v8::Task> task,
-                                                      double delay) {
+void PlatformTaskRunner::PostNonNestableDelayedTask(unique_ptr<v8::Task> task,
+                                                    double delay) {
   PostDelayedTask(move(task), delay);
 }
 
-AworkerPlatform::AworkerPlatform(ThreadMode thread_mode)
-    : thread_mode_(thread_mode) {
+AworkerPlatform::AworkerPlatform() {
   CHECK_EQ(uv_loop_init(&loop_), 0);
   CHECK_EQ(uv_loop_configure(&loop_, UV_METRICS_IDLE_TIME), 0);
-  task_runner_ = std::make_unique<aworker::SameThreadTaskRunner>(&loop_);
+  task_runner_ = std::make_unique<aworker::PlatformTaskRunner>(&loop_);
   trace_agent_ = std::make_unique<TraceAgent>(&loop_);
   aworker::TracingController* controller = trace_agent_->GetTracingController();
   trace_state_observer_ =
@@ -185,11 +182,6 @@ AworkerPlatform::AworkerPlatform(ThreadMode thread_mode)
 
   array_buffer_allocator_ = std::shared_ptr<v8::ArrayBuffer::Allocator>(
       v8::ArrayBuffer::Allocator::NewDefaultAllocator());
-
-  if (thread_mode == kMultiThread) {
-    // TODO(chengzhong.wcz): Proper worker thread task runner support.
-    worker_thread_platform_ = v8::platform::NewDefaultPlatform();
-  }
 }
 
 AworkerPlatform::~AworkerPlatform() {
@@ -205,16 +197,12 @@ AworkerPlatform::~AworkerPlatform() {
 }
 
 void AworkerPlatform::CallOnWorkerThread(unique_ptr<v8::Task> task) {
-  CHECK_EQ(thread_mode_, kMultiThread);
-  CHECK_NOT_NULL(worker_thread_platform_);
-  worker_thread_platform_->CallOnWorkerThread(std::move(task));
+  task_runner_->PostTask(std::move(task));
 }
 
 void AworkerPlatform::CallDelayedOnWorkerThread(unique_ptr<v8::Task> task,
                                                 double delay) {
-  CHECK_EQ(thread_mode_, kMultiThread);
-  CHECK_NOT_NULL(worker_thread_platform_);
-  worker_thread_platform_->CallDelayedOnWorkerThread(std::move(task), delay);
+  task_runner_->PostDelayedTask(std::move(task), delay);
 }
 
 std::unique_ptr<JobHandle> AworkerPlatform::PostJob(
@@ -266,7 +254,7 @@ void AworkerPlatform::EvaluateCommandlineOptions(CommandlineParserGroup* cli) {
   }
 }
 
-AworkerPlatform::Scope::Scope(AworkerPlatform* platform) {
+AworkerPlatform::Scope::Scope(AworkerPlatform* platform) : platform_(platform) {
   v8::V8::InitializePlatform(platform);
   aworker::tracing::TraceEventHelper::SetTraceAgent(platform->trace_agent());
 }

@@ -44,7 +44,7 @@ class TestDelayedTask : public v8::Task {
 };
 
 TEST(AworkerPlatformForegroundTaskRunner, PostTask) {
-  AworkerPlatform platform(AworkerPlatform::kSingleThread);
+  AworkerPlatform platform;
   uv_loop_t* loop = platform.loop();
 
   // uv_run will not spin the loop if there is no ref-ed handles/reqs.
@@ -86,7 +86,7 @@ TEST(AworkerPlatformForegroundTaskRunner, PostTask) {
 }
 
 TEST(AworkerPlatformForegroundTaskRunner, PostDelayedTask) {
-  AworkerPlatform platform(AworkerPlatform::kSingleThread);
+  AworkerPlatform platform;
   uv_loop_t* loop = platform.loop();
 
   // uv_run will not spin the loop if there is no ref-ed handles/reqs.
@@ -131,7 +131,7 @@ TEST(AworkerPlatformForegroundTaskRunner, PostDelayedTask) {
 }
 
 TEST(AworkerPlatformForegroundTaskRunner, Interwined) {
-  AworkerPlatform platform(AworkerPlatform::kSingleThread);
+  AworkerPlatform platform;
   uv_loop_t* loop = platform.loop();
 
   // uv_run will not spin the loop if there is no ref-ed handles/reqs.
@@ -194,7 +194,7 @@ TEST(AworkerPlatformForegroundTaskRunner, Interwined) {
 }
 
 TEST(AworkerPlatformForegroundTaskRunner, InterwinedDuringReschedule) {
-  AworkerPlatform platform(AworkerPlatform::kSingleThread);
+  AworkerPlatform platform;
   uv_loop_t* loop = platform.loop();
 
   // uv_run will not spin the loop if there is no ref-ed handles/reqs.

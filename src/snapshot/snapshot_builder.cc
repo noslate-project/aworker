@@ -397,7 +397,7 @@ void SnapshotBuilder::Generate(SnapshotData* out,
 }
 
 void SnapshotBuilder::Generate(SnapshotData* out, int argc, char** argv) {
-  AworkerPlatform platform(AworkerPlatform::kSingleThread);
+  AworkerPlatform platform;
   AworkerPlatform::Scope platform_scope(&platform);
   v8::V8::Initialize();
 

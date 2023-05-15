@@ -12,7 +12,6 @@
 namespace aworker {
 
 char** InitializeOncePerProcess(int* argc, char** argv);
-void EvaluatePerProcessArgv(CommandlineParserGroup* cli);
 bool TearDownOncePerProcess();
 
 namespace per_process {
