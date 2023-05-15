@@ -239,7 +239,6 @@ void AworkerMainInstance::WarmFork() {
   aworker_v8::ResetRandomNumberGenerator(isolate_, context, GenerateSeed());
 
   platform_->EvaluateCommandlineOptions(cli_.get());
-  Mark(PerformanceMilestone::AWORKER_PERFORMANCE_MILESTONE_AFTER_FORK);
   TRACE_EVENT_INSTANT_WITH_TIMESTAMP0(TRACING_CATEGORY_AWORKER1(main),
                                       "warmFork",
                                       TRACE_EVENT_SCOPE_THREAD,
@@ -362,7 +361,6 @@ int AworkerMainInstance::Start() {
 
   // 事件循环
   {
-    Mark(PerformanceMilestone::AWORKER_PERFORMANCE_MILESTONE_LOOP_START);
     // Disallow handles been created without local HandleScopes.
     SealHandleScope scope(isolate);
     uv_run(loop_, UV_RUN_DEFAULT);

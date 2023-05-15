@@ -12,8 +12,8 @@ promise_test(async () => {
   const timing = JSON.parse(result.stdout.trim()).aworkerTiming;
 
   const keys = [
-    'afterFork',
-    'bootStrapTime',
+    'bootstrapAgent',
+    'loadEvent',
     'duration',
   ];
 
@@ -34,8 +34,8 @@ promise_test(async () => {
   const timing = JSON.parse(result.stdout.trim()).aworkerTiming;
 
   const keys = [
-    'bootStrapTime',
-    'evaluate',
+    'bootstrapAgent',
+    'loadEvent',
     'duration',
   ];
 

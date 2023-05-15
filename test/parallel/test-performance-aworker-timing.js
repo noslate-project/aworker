@@ -11,13 +11,8 @@ test(() => {
     'entryType',
     'startTime',
     'duration',
-    'bootStrapTime',
-    'readScriptFile',
-    'parseScript',
-    'evaluateScript',
-    'loopStart',
-    'evaluate',
-    'afterFork',
+    'bootstrapAgent',
+    'loadEvent',
     'idleTime',
   ]);
   assert_equals(timing.name, 'aworker');
@@ -31,11 +26,8 @@ promise_test(async () => {
     }, 0);
   });
   const keys = [
-    'bootStrapTime',
-    'readScriptFile',
-    'parseScript',
-    'evaluateScript',
-    'loopStart',
+    'bootstrapAgent',
+    'loadEvent',
     'duration',
   ];
 

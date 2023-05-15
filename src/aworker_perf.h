@@ -10,14 +10,8 @@ double getTimeOriginTimestamp();
 void RefreshTimeOrigin();
 
 #define AWORKER_PERFORMANCE_MILESTONES(V)                                      \
-  V(AWORKER_START, "aworker_start")                                            \
-  V(LOOP_START, "loop_start")                                                  \
   V(BOOTSTRAP_AGENT, "bootstrap_agent")                                        \
-  V(READ_SCRIPT_FILE, "read_script_file")                                      \
-  V(PARSE_SCRIPT, "parse_script")                                              \
-  V(EVALUATE_SCRIPT, "evaluate_script")                                        \
-  V(EVALUATE, "evaluate")                                                      \
-  V(AFTER_FORK, "after_fork")
+  V(LOAD_EVENT, "load_event")
 
 enum PerformanceMilestone {
 #define V(name, _) AWORKER_PERFORMANCE_MILESTONE_##name,
