@@ -99,8 +99,9 @@ void SameThreadTaskRunner::ImmediateProcessor(uv_timer_t* handle) {
     runner->next_deadline_ = -1;
     return;
   }
-  per_process::Debug(
-      DebugCategory::PLATFORM, "scheduling next immediate: %d\n", next_timeout);
+  per_process::Debug(DebugCategory::PLATFORM,
+                     "scheduleing next immediate: %d\n",
+                     next_timeout);
   runner->next_deadline_ = now + next_timeout;
   uv_timer_start(runner->timer_, ImmediateProcessor, next_timeout, 0);
 }
@@ -171,7 +172,7 @@ void SameThreadTaskRunner::PostNonNestableDelayedTask(unique_ptr<v8::Task> task,
   PostDelayedTask(move(task), delay);
 }
 
-AworkerPlatform::AworkerPlatform(ThreadMode thread_mode, int thread_pool_size)
+AworkerPlatform::AworkerPlatform(ThreadMode thread_mode)
     : thread_mode_(thread_mode) {
   CHECK_EQ(uv_loop_init(&loop_), 0);
   CHECK_EQ(uv_loop_configure(&loop_, UV_METRICS_IDLE_TIME), 0);
@@ -187,8 +188,7 @@ AworkerPlatform::AworkerPlatform(ThreadMode thread_mode, int thread_pool_size)
 
   if (thread_mode == kMultiThread) {
     // TODO(chengzhong.wcz): Proper worker thread task runner support.
-    worker_thread_platform_ =
-        v8::platform::NewDefaultPlatform(thread_pool_size);
+    worker_thread_platform_ = v8::platform::NewDefaultPlatform();
   }
 }
 

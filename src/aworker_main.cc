@@ -31,8 +31,7 @@ int main(int argc, char** argv) {
   {
     AworkerPlatform platform(cli->threaded_platform()
                                  ? AworkerPlatform::kMultiThread
-                                 : AworkerPlatform::kSingleThread,
-                             cli->threaded_platform_pool_size());
+                                 : AworkerPlatform::kSingleThread);
     AworkerPlatform::Scope use_platform(&platform);
     v8::V8::Initialize();
     {
