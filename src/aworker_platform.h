@@ -23,7 +23,7 @@
  */
 
 #include <list>
-#include <mutex>
+#include <mutex>  // NOLINT(build/c++11)
 #include <queue>
 
 #include "command_parser.h"
