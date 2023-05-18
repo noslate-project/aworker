@@ -131,7 +131,8 @@ void ForegroundTaskRunner::DrainTasks() {
     std::scoped_lock guard(queue_mutex_);
     tasks_.swap(tasks);
     while (delayed_tasks_.size() > 0) {
-      auto& it = const_cast<std::unique_ptr<PlatformDelayedTask>&>(delayed_tasks_.top());
+      auto& it = const_cast<std::unique_ptr<PlatformDelayedTask>&>(
+          delayed_tasks_.top());
       if (it->deadline() > now) {
         break;
       }
@@ -158,11 +159,13 @@ ForegroundTaskRunner::~ForegroundTaskRunner() {}
 
 void ForegroundTaskRunner::Delete(ForegroundTaskRunner* runner) {
   uv_close(reinterpret_cast<uv_handle_t*>(&runner->timer_), nullptr);
-  uv_close(reinterpret_cast<uv_handle_t*>(&runner->async_), [](uv_handle_t* handle) {
-    ForegroundTaskRunner* runner = ContainerOf(
-        &ForegroundTaskRunner::async_, reinterpret_cast<uv_async_t*>(handle));
-    delete runner;
-  });
+  uv_close(reinterpret_cast<uv_handle_t*>(&runner->async_),
+           [](uv_handle_t* handle) {
+             ForegroundTaskRunner* runner =
+                 ContainerOf(&ForegroundTaskRunner::async_,
+                             reinterpret_cast<uv_async_t*>(handle));
+             delete runner;
+           });
 }
 
 void ForegroundTaskRunner::PostTask(unique_ptr<v8::Task> task) {

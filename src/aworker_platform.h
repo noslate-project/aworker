@@ -23,8 +23,8 @@
  */
 
 #include <list>
-#include <queue>
 #include <mutex>
+#include <queue>
 
 #include "command_parser.h"
 #include "libplatform/libplatform.h"

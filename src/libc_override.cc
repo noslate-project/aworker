@@ -20,23 +20,23 @@ int raise(int sig) {
 }
 
 // override glibc abort, avoid get_pid cache
-// @see: https://sourceware.org/git/?p=glibc.git;a=blob;f=stdlib/abort.c;h=16a453459c9ee459b690cac7d4402ba385f52fb9;hb=d6c72f976c61d3c1465699f2bcad77e62bafe61d
+// @see:
+// https://sourceware.org/git/?p=glibc.git;a=blob;f=stdlib/abort.c;h=16a453459c9ee459b690cac7d4402ba385f52fb9;hb=d6c72f976c61d3c1465699f2bcad77e62bafe61d
 #if defined(__x86_64__) || defined(_M_X64)
-#define ABORT_INSTRUCTION asm ("hlt")
+#define ABORT_INSTRUCTION asm("hlt")
 #elif defined(i386) || defined(__i386__) || defined(__i386) || defined(_M_IX86)
-#define ABORT_INSTRUCTION asm ("hlt")
+#define ABORT_INSTRUCTION asm("hlt")
 #elif defined(__aarch64__) || defined(_M_ARM64)
-#define ABORT_INSTRUCTION asm ("brk\t#1000")
+#define ABORT_INSTRUCTION asm("brk\t#1000")
 #else
 /* No such instruction is available.  */
-# define ABORT_INSTRUCTION
+#define ABORT_INSTRUCTION
 #endif
 
 void abort(void) {
   raise(SIGABRT);
 
-  while (1)
-    ABORT_INSTRUCTION;
+  while (1) ABORT_INSTRUCTION;
 }
 
 namespace libc_override {
