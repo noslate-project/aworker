@@ -77,6 +77,8 @@ int64_t GenerateSeed() {
 char** InitializeOncePerProcess(int* argc, char** argv) {
   per_process::enabled_debug_list.Parse();
   RefreshLogLevel();
+  RefreshMilestones();
+
   per_process::DebugPrintCurrentTime("initialize once per process");
 
   RegisterBindings();
@@ -212,6 +214,7 @@ void AworkerMainInstance::WarmFork() {
   TURF_PHD(turf_fork_wait, &rc, &argc, &argv);
   libc_override::RunChildHooks();
   RefreshTimeOrigin();
+  RefreshMilestones();
   RefreshLogLevel();
   per_process::enabled_debug_list.Parse();
   per_process::DebugPrintCurrentTime("just after fork");
@@ -300,7 +303,6 @@ void AworkerMainInstance::WarmForkWithUserScript() {
   Isolate* isolate = immortal_->isolate();
 
   immortal_->BootstrapAgent();
-  per_process::DebugPrintCurrentTime("bootstrapped agent");
 
   CHECK_EQ(immortal_->StartForkExecution().ToChecked(), true);
   {
@@ -347,6 +349,7 @@ int AworkerMainInstance::Start() {
     }
 
     immortal_->BootstrapAgent();
+    Mark(PerformanceMilestone::AWORKER_PERFORMANCE_MILESTONE_BOOTSTRAP_AGENT);
     per_process::DebugPrintCurrentTime("bootstrapped agent");
 
     if (cli_->cpu_prof()) {

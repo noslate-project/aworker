@@ -133,6 +133,7 @@ TEST(Aworker, InitializeAndBootstrap) {
       "global/worker_global_scope.js",
       "navigator.js",
       "path.js",
+      "performance/aworker_timing.js",
       "performance/observer.js",
       "performance/performance.js",
       "performance/performance_entry.js",
