@@ -11,7 +11,7 @@ declare namespace aworker {
       body?: DaprBodyType;
       name?: string;
       operation?: string;
-      metadata?: object;
+      metadata?: Record<string, string>;
     }
 
     interface ServiceRequest extends Body {
@@ -28,11 +28,16 @@ declare namespace aworker {
       new(init?: BindingRequestInit): BindingRequest;
       readonly name: string;
       readonly operation: string;
-      readonly metadata: object;
+      readonly metadata: Record<string, string>;
+    }
+
+    interface BindingResponseInit extends ResponseInit {
+      metadata?: Record<string, string>;
     }
 
     interface BindingResponse extends Response {
-      new(init?: DaprBodyType): ServiceResponse;
+      new(body: DaprBodyType, init?: BindingResponseInit): ServiceResponse;
+      readonly metadata: Record<string, string>;
     }
 
     interface DaprV1 {
