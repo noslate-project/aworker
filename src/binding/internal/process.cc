@@ -8,6 +8,7 @@
 #include "immortal.h"
 #include "metadata.h"
 #include "uv.h"
+#include "inspector/inspector_agent.h"
 
 using v8::Array;
 using v8::BigInt;
@@ -77,7 +78,8 @@ AWORKER_METHOD(ConsoleCall) {
   Local<Context> context = immortal->context();
 
   SlicedArguments call_args(info, 2);
-  if (immortal->inspector_agent() != nullptr) {
+
+  if (immortal->inspector_agent() != nullptr && immortal->inspector_agent()->IsActive()) {
     Local<Value> inspector_method = info[0];
     CHECK(inspector_method->IsFunction());
     MaybeLocal<Value> ret = inspector_method.As<Function>()->Call(
