@@ -45,10 +45,12 @@ function collectStdout(cp) {
     stderr: '',
   };
   for (const stdxxx of Object.keys(result)) {
-    cp[stdxxx].setEncoding('utf8');
-    cp[stdxxx].on('data', chunk => {
-      result[stdxxx] += chunk;
-    });
+    if (cp[stdxxx]) {
+      cp[stdxxx].setEncoding('utf8');
+      cp[stdxxx].on('data', chunk => {
+        result[stdxxx] += chunk;
+      });
+    }
   }
   return result;
 }
@@ -56,8 +58,8 @@ function collectStdout(cp) {
 function createExec(fn) {
   return (args, options) => {
     const cp = fn(args, {
-      ...(options ?? {}),
       stdio: [ 'ignore', 'pipe', 'pipe' ],
+      ...(options ?? {}),
     });
     const result = collectStdout(cp);
     result.pid = cp.pid;
