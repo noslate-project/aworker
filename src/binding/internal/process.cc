@@ -6,6 +6,7 @@
 #include "command_parser.h"
 #include "error_handling.h"
 #include "immortal.h"
+#include "inspector/inspector_agent.h"
 #include "metadata.h"
 #include "uv.h"
 
@@ -77,7 +78,9 @@ AWORKER_METHOD(ConsoleCall) {
   Local<Context> context = immortal->context();
 
   SlicedArguments call_args(info, 2);
-  if (immortal->inspector_agent() != nullptr) {
+
+  if (immortal->inspector_agent() != nullptr &&
+      immortal->inspector_agent()->IsActive()) {
     Local<Value> inspector_method = info[0];
     CHECK(inspector_method->IsFunction());
     MaybeLocal<Value> ret = inspector_method.As<Function>()->Call(
