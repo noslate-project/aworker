@@ -1,0 +1,13 @@
+{
+  "name": "@noslate/aworker-types",
+  "version": "1.0.0",
+  "types": "lib.aworker.d.ts",
+  "files": [
+    "*.d.ts"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/noslate-project/aworker",
+    "directory": "typings/aworker"
+  }
+}

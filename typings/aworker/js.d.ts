@@ -84,7 +84,7 @@ declare namespace aworker {
        * @param sandbox A non-null sandbox object.
        * @param options The context options.
        */
-      constructor(sandbox: object, options?: ContextOptions);
+      constructor(sandbox: Record<string, unknown>, options?: ContextOptions);
 
       /**
        * Execute a script and return it's last statement's result.
@@ -102,7 +102,7 @@ declare namespace aworker {
       /**
        * The `globalThis` object for this context. Deeply equals to `sandbox` in `constructor`.
        */
-      get globalThis(): object;
+      get globalThis(): Record<string, unknown>;
     }
   }
 }
