@@ -19,6 +19,7 @@ void Watchdog::RegisterEntry(WatchdogEntry* entry) {
   pending_entries_.push_back(entry);
   if (started_ && start_async_) {
     start_async_->Send();
+    thread_start_condition_.wait(scoped_lock);
   }
 }
 
@@ -66,6 +67,7 @@ void Watchdog::StartRequest() {
     started_entries_.push_back(it);
   }
   pending_entries_ = {};
+  thread_start_condition_.notify_all();
 }
 
 void Watchdog::StopRequest() {
