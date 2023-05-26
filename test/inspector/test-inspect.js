@@ -3,11 +3,19 @@
 require('../common/node_testharness');
 const path = require('path');
 const { once } = require('events');
+const childProcess = require('child_process');
 
+const fixtures = require('../common/fixtures');
 const Client = require('../../tools/inspect-client');
 const { run } = require('./inspector-util');
 
 const inspectScript = path.join(__dirname, 'fixtures/inspect-target.js');
+
+promise_test(async () => {
+  const cp = await childProcess.spawn(fixtures.path('product', 'aworker'), [ '--inspect', inspectScript ]);
+  const [ code ] = await once(cp, 'exit');
+  assert_equals(code, 4);
+}, 'should exit if agent is not connected');
 
 promise_test(async () => {
   const cp = await run(inspectScript);
