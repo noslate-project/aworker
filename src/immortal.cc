@@ -628,7 +628,10 @@ void Immortal::BootstrapAgent() {
   }
 
   if (commandline_parser()->mixin_inspect()) {
-    CHECK(inspector_agent_ != nullptr);
+    if (agent_diag_channel_ == nullptr) {
+      fprintf(stderr, "FATAL: Inspector can not be started without agent\n");
+      exit(4);
+    }
     inspector_agent_->StartInspectorIo();
   }
 
