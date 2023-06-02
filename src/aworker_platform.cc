@@ -158,13 +158,18 @@ ForegroundTaskRunner::ForegroundTaskRunner(uv_loop_t* loop) {
 ForegroundTaskRunner::~ForegroundTaskRunner() {}
 
 void ForegroundTaskRunner::Delete(ForegroundTaskRunner* runner) {
-  uv_close(reinterpret_cast<uv_handle_t*>(&runner->timer_), nullptr);
   uv_close(reinterpret_cast<uv_handle_t*>(&runner->async_),
            [](uv_handle_t* handle) {
              ForegroundTaskRunner* runner =
                  ContainerOf(&ForegroundTaskRunner::async_,
                              reinterpret_cast<uv_async_t*>(handle));
-             delete runner;
+             uv_close(reinterpret_cast<uv_handle_t*>(&runner->timer_),
+                      [](uv_handle_t* handle) {
+                        ForegroundTaskRunner* runner =
+                            ContainerOf(&ForegroundTaskRunner::timer_,
+                                        reinterpret_cast<uv_timer_t*>(handle));
+                        delete runner;
+                      });
            });
 }
 
@@ -219,13 +224,14 @@ AworkerPlatform::AworkerPlatform(ThreadMode thread_mode, int thread_pool_size)
 
 AworkerPlatform::~AworkerPlatform() {
   trace_agent_->Stop();
+  task_runner_.reset();
+  trace_agent_.reset();
+
   // wait until trace agent flushed
   while (uv_loop_alive(&loop_) != 0) {
     uv_run(&loop_, UV_RUN_DEFAULT);
   }
 
-  task_runner_.reset();
-  trace_agent_.reset();
   CheckedUvLoopClose(&loop_);
 }
 
