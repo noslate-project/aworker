@@ -141,7 +141,7 @@ class Benchmark {
     // TODO: report configuration
 
     for (const config of this.queue) {
-      await Promise.resolve(this.fn(config, {
+      await new Promise(resolve => this.fn(config, {
         start: () => {
           if (this._startedMap.has(config)) {
             throw new Error('Called start more than once in a single benchmark');
@@ -173,6 +173,7 @@ class Benchmark {
           const elapsedInSeconds = (now - time) / 1000;
           const rate = operations / elapsedInSeconds;
           this.report(rate, elapsedInSeconds, config);
+          resolve();
         },
       }));
     }

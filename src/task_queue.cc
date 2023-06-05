@@ -42,7 +42,7 @@ void TickTaskQueue(Immortal* immortal) {
     MaybeLocal<Value> handled;
     Local<Value> argv[0] = {};
     handled = tick_task_queue_function.As<Function>()->Call(
-        context, process_object, 0, argv);
+        context, context->Global(), 0, argv);
     if (handled.IsEmpty()) {
       return;
     }

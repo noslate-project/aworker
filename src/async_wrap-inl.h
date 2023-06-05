@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SRC_ASYNC_WRAP_INL_H_
+#define SRC_ASYNC_WRAP_INL_H_
 
 #include "async_wrap.h"
 
@@ -27,3 +28,5 @@ inline v8::MaybeLocal<v8::Value> AsyncWrap::MakeCallback(
 }
 
 }  // namespace aworker
+
+#endif  // SRC_ASYNC_WRAP_INL_H_

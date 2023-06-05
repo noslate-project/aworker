@@ -297,7 +297,7 @@ void EmitUncaughtException(Isolate* isolate,
   if (message.IsEmpty()) message = Exception::CreateMessage(isolate, error);
 
   CHECK(isolate->InContext());
-  auto context = immortal->context();
+  Local<Context> context = immortal->context();
 
   immortal->inspector_agent()->ReportUncaughtException(error, message);
 
@@ -328,7 +328,7 @@ void EmitUncaughtException(Isolate* isolate,
   try_catch.SetVerbose(false);
   Local<Value> argv[1] = {error};
   handled = fatal_exception_function.As<Function>()->Call(
-      context, process_object, 1, argv);
+      context, context->Global(), 1, argv);
 
   if (handled.IsEmpty()) {
     return;
