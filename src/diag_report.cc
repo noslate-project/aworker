@@ -352,34 +352,6 @@ static void PrintJavaScriptErrorProperties(JSONWriter* writer,
   writer->json_objectend();  // the end of 'errorProperties'
 }
 
-static const char* VmStateToString(v8::StateTag stateTag) {
-#define VM_STATE(V)                                                            \
-  V(JS)                                                                        \
-  V(GC)                                                                        \
-  V(PARSER)                                                                    \
-  V(BYTECODE_COMPILER)                                                         \
-  V(COMPILER)                                                                  \
-  V(OTHER)                                                                     \
-  V(EXTERNAL)                                                                  \
-  V(ATOMICS_WAIT)                                                              \
-  V(IDLE)
-
-#define V(VM_STATE)                                                            \
-  case v8::StateTag::VM_STATE: {                                               \
-    return #VM_STATE;                                                          \
-  }
-
-  switch (stateTag) {
-    VM_STATE(V)
-    default: {
-      return "UNKNOWN";
-    }
-  }
-
-#undef V
-#undef VM_STATE
-}
-
 // Report the JavaScript stack.
 static const size_t kMaxFramesCount = 255;
 static void PrintJavaScriptErrorStackNoEval(JSONWriter* writer,
@@ -677,10 +649,10 @@ ReportWatchdog::ReportWatchdog(Immortal* immortal)
     : SignalWatchdog(immortal->watchdog(), SIGUSR2), immortal_(immortal) {}
 
 void ReportWatchdog::OnSignal() {
-  immortal_->RequestInterrupt([this]() {
-    HandleScope scope(immortal_->isolate());
+  immortal_->RequestInterrupt([](Immortal* immortal, InterruptKind kind) {
+    HandleScope scope(immortal->isolate());
     TriggerDiagReport(
-        immortal_->isolate(), immortal_, "Signal", "Signal", Local<Value>());
+        immortal->isolate(), immortal, "Signal", "Signal", Local<Value>());
   });
 }
 

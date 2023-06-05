@@ -190,9 +190,7 @@ AWORKER_METHOD(SetWorkerState) {
 
 void StartLoopLatencyWatchdogIfNeeded(const FunctionCallbackInfo<Value>& info) {
   Immortal* immortal = Immortal::GetCurrent(info);
-  if (immortal->commandline_parser()->loop_latency_limit_ms()) {
-    immortal->StartLoopLatencyWatchdog();
-  }
+  immortal->StartLoopLatencyWatchdogIfNeeded();
 }
 
 #define METADATA_KEYS(V)                                                       \

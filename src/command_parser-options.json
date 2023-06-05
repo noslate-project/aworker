@@ -82,6 +82,11 @@
       "desc": "set macro task count to be processed in each tick",
       "default": 2
     },
+    "long-task-threshold-ms": {
+      "meta": "<MILLISECONDS>",
+      "desc": "print stacktrace if the task duration reached the threshold",
+      "default": 0
+    },
     "loop-latency-limit-ms": {
       "meta": "<MILLISECONDS>",
       "desc": "abort the process if the event loop latency reached the limit",

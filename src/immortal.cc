@@ -210,7 +210,7 @@ Immortal::Immortal(uv_loop_t* loop,
           loop, options->max_macro_task_count_per_tick())),
       isolate_data_(isolate_data) {
   interrupt_async_ = UvAsync<std::function<void()>>::Create(
-      loop, [this]() { ExhaustInterruptRequests(); });
+      loop, [this]() { ExhaustInterruptRequests(InterruptKind::kIdle); });
   interrupt_async_->Unref();
 
   CHECK_EQ(uv_prepare_init(loop, &prepare_handle_), 0);
@@ -480,7 +480,7 @@ bool Immortal::SetValueProperty(Local<Object> object,
   return ret.FromJust();
 }
 
-void Immortal::RequestInterrupt(std::function<void()>&& callback) {
+void Immortal::RequestInterrupt(InterruptCallback&& callback) {
   {
     ScopedLock lock(interrupt_mutex_);
     interrupt_requests_.push_back(callback);
@@ -490,19 +490,19 @@ void Immortal::RequestInterrupt(std::function<void()>&& callback) {
   isolate()->RequestInterrupt(
       [](v8::Isolate* isolate, void* ctx) {
         auto immortal = reinterpret_cast<Immortal*>(ctx);
-        immortal->ExhaustInterruptRequests();
+        immortal->ExhaustInterruptRequests(InterruptKind::kJavaScript);
       },
       this);
 }
 
-void Immortal::ExhaustInterruptRequests() {
-  std::list<std::function<void()>> requests;
+void Immortal::ExhaustInterruptRequests(InterruptKind kind) {
+  std::list<InterruptCallback> requests;
   {
     ScopedLock lock(interrupt_mutex_);
     requests.swap(interrupt_requests_);
   }
   for (auto it : requests) {
-    it();
+    it(this, kind);
   }
 }
 
@@ -648,13 +648,18 @@ void Immortal::BootstrapAgent() {
   }
 }
 
-void Immortal::StartLoopLatencyWatchdog() {
+void Immortal::StartLoopLatencyWatchdogIfNeeded() {
+  if (commandline_parser()->loop_latency_limit_ms() == 0 &&
+      commandline_parser()->long_task_threshold_ms() == 0) {
+    return;
+  }
   if (loop_latency_watchdog_) {
     return;
   }
-  DCHECK(commandline_parser()->loop_latency_limit_ms());
   loop_latency_watchdog_ = std::make_unique<LoopLatencyWatchdog>(
-      this, commandline_parser()->loop_latency_limit_ms());
+      this,
+      commandline_parser()->long_task_threshold_ms(),
+      commandline_parser()->loop_latency_limit_ms());
   watchdog_->StartIfNeeded();
   // Initiate initial loop check.
   loop_latency_watchdog_->OnCheck();

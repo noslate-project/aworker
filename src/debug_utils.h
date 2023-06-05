@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SRC_DEBUG_UTILS_H_
+#define SRC_DEBUG_UTILS_H_
 #include <algorithm>
 #include <memory>
 #include <sstream>
@@ -122,6 +123,9 @@ class NativeSymbolDebuggingContext {
 void CheckedUvLoopClose(uv_loop_t* loop);
 void PrintUvHandleInformation(uv_loop_t* loop, FILE* stream);
 
+const char* VmStateToString(v8::StateTag stateTag);
+void PrintJavaScriptStack(v8::Isolate* isolate, const char* message);
+
 namespace per_process {
 extern EnabledDebugList enabled_debug_list;
 
@@ -136,3 +140,5 @@ inline void FORCE_INLINE DebugPrintCurrentTime(const char* name);
 }  // namespace aworker
 
 #include "debug_utils-inl.h"
+
+#endif  // SRC_DEBUG_UTILS_H_
