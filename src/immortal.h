@@ -205,6 +205,11 @@ class IsolateData {
   v8::Isolate* isolate_;
 };
 
+enum class InterruptKind {
+  kIdle,
+  kJavaScript,
+};
+
 class Immortal : public MemoryRetainer {
  public:
   using V8RawFunction = void (*)(const v8::FunctionCallbackInfo<v8::Value>&);
@@ -213,6 +218,8 @@ class Immortal : public MemoryRetainer {
   using V8RawSetter = void (*)(v8::Local<v8::Name>,
                                v8::Local<v8::Value>,
                                const v8::PropertyCallbackInfo<void>&);
+  using InterruptCallback =
+      std::function<void(Immortal* immortal, InterruptKind kind)>;
 
  private:
 #define VN(type, name) IMMORTAL_DECLARE_PROPERTY(type, type, name)
@@ -290,7 +297,7 @@ class Immortal : public MemoryRetainer {
 
   void Raise(int sig_num);
 
-  void StartLoopLatencyWatchdog();
+  void StartLoopLatencyWatchdogIfNeeded();
 
   // TODO(chengzhong.wcz): Move helper funtions out of Immortal.
   bool SetAccessor(v8::Local<v8::Object> object,
@@ -314,8 +321,8 @@ class Immortal : public MemoryRetainer {
                         const char* name,
                         v8::Local<v8::Value> value);
 
-  void RequestInterrupt(std::function<void()>&& callback);
-  void ExhaustInterruptRequests();
+  void RequestInterrupt(InterruptCallback&& callback);
+  void ExhaustInterruptRequests(InterruptKind kind);
 
   inline void AssignToContext(v8::Local<v8::Context> context);
 
@@ -350,7 +357,7 @@ class Immortal : public MemoryRetainer {
 
   IsolateData* isolate_data_;
   UvAsync<std::function<void()>>::Ptr interrupt_async_;
-  std::list<std::function<void()>> interrupt_requests_;
+  std::list<InterruptCallback> interrupt_requests_;
   std::mutex interrupt_mutex_;
   std::unique_ptr<Watchdog> watchdog_;
   std::unique_ptr<report::ReportWatchdog> report_watchdog_;

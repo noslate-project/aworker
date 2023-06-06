@@ -58,7 +58,7 @@ function assert_match(actual, expected) {
   if (expected.includes('*')) {
     const expr = escapeRegex(expected.replace(/[*]/g, '#ANY#')).replace(/#ANY#/g, '[\\s\\S]+');
     const regexp = new RegExp(expr);
-    assert_true(regexp.test(actual));
+    assert_regexp_match(actual, regexp);
   } else {
     assert_equals(actual, expected);
   }

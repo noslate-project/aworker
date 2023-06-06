@@ -51,6 +51,14 @@
 
 namespace aworker {
 
+using v8::HandleScope;
+using v8::Isolate;
+using v8::Local;
+using v8::RegisterState;
+using v8::SampleInfo;
+using v8::StackFrame;
+using v8::StackTrace;
+
 namespace per_process {
 EnabledDebugList enabled_debug_list;
 }
@@ -524,6 +532,77 @@ void PrintUvHandleInformation(uv_loop_t* loop, FILE* stream) {
           "uv loop at [%p] has %zu open handles in total\n",
           loop,
           info.num_handles);
+}
+
+const char* VmStateToString(v8::StateTag stateTag) {
+#define VM_STATE(V)                                                            \
+  V(JS)                                                                        \
+  V(GC)                                                                        \
+  V(PARSER)                                                                    \
+  V(BYTECODE_COMPILER)                                                         \
+  V(COMPILER)                                                                  \
+  V(OTHER)                                                                     \
+  V(EXTERNAL)                                                                  \
+  V(ATOMICS_WAIT)                                                              \
+  V(IDLE)
+
+#define V(VM_STATE)                                                            \
+  case v8::StateTag::VM_STATE: {                                               \
+    return #VM_STATE;                                                          \
+  }
+
+  switch (stateTag) {
+    VM_STATE(V)
+    default: {
+      return "UNKNOWN";
+    }
+  }
+
+#undef V
+#undef VM_STATE
+}
+
+static int kMaxFramesCount = 255;
+void PrintJavaScriptStack(Isolate* isolate, const char* message) {
+  HandleScope scope(isolate);
+  RegisterState state;
+  SampleInfo info;
+
+  // init state
+  state.pc = nullptr;
+  state.fp = &state;
+  state.sp = &state;
+
+  // instruction pointer
+  void* samples[kMaxFramesCount];
+
+  // get instruction pointer
+  isolate->GetStackSample(state, samples, kMaxFramesCount, &info);
+  if (info.frames_count == 0) {
+    FPrintF(stderr,
+            "Trace: No stack, VmState: %s\n",
+            VmStateToString(info.vm_state));
+    return;
+  }
+
+  // get js stacks
+  Local<StackTrace> stack = StackTrace::CurrentStackTrace(
+      isolate, kMaxFramesCount, StackTrace::kDetailed);
+  FPrintF(stderr, "Trace: %s\n", message);
+  for (int i = 0; i < stack->GetFrameCount(); i++) {
+    Local<StackFrame> frame = stack->GetFrame(isolate, i);
+
+    Utf8Value function_name(isolate, frame->GetFunctionName());
+    Utf8Value script_name(isolate, frame->GetScriptName());
+    const int line_number = frame->GetLineNumber();
+    const int column_number = frame->GetColumn();
+    FPrintF(stderr,
+            "  at %s (%s:%d:%d)\n",
+            *function_name,
+            *script_name,
+            line_number,
+            column_number);
+  }
 }
 
 }  // namespace aworker

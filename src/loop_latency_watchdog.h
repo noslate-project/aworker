@@ -8,7 +8,9 @@ namespace aworker {
 
 class LoopLatencyWatchdog : public WatchdogEntry {
  public:
-  LoopLatencyWatchdog(Immortal* immortal, uint64_t latency_limit_ms);
+  LoopLatencyWatchdog(Immortal* immortal,
+                      uint64_t long_task_threshold_ms,
+                      uint64_t fatal_latency_limit_ms);
 
   AWORKER_DISALLOW_ASSIGN_COPY(LoopLatencyWatchdog)
 
@@ -20,13 +22,16 @@ class LoopLatencyWatchdog : public WatchdogEntry {
 
  private:
   static void AsyncCallback(uv_async_t* handle);
-  static void TimerCallback(uv_timer_t* handle);
+  static void LongTaskTimerCallback(uv_timer_t* handle);
+  static void FatalTimerCallback(uv_timer_t* handle);
 
   Immortal* immortal_;
 
   uv_async_t async_;
-  uv_timer_t timer_;
-  uint64_t latency_limit_ms_;
+  uv_timer_t long_task_timer_;
+  uv_timer_t fatal_timer_;
+  uint64_t long_task_threshold_ms_;
+  uint64_t fatal_latency_limit_ms_;
 
   std::mutex idle_mutex_;
   bool idle_;
