@@ -90,16 +90,17 @@ void NoslatedDiagChannel::InspectorStart(
     closure(CanonicalCode::CLIENT_ERROR, std::move(err), nullptr);
     return;
   }
-  immortal_->RequestInterrupt([this, closure]() {
-    per_process::Debug(DebugCategory::AGENT_CHANNEL,
-                       "diagnostics channel inspector start interrupted\n");
+  immortal_->RequestInterrupt(
+      [this, closure](Immortal* immortal, InterruptKind kind) {
+        per_process::Debug(DebugCategory::AGENT_CHANNEL,
+                           "diagnostics channel inspector start interrupted\n");
 
-    immortal_->inspector_agent()->StartInspectorIo();
+        immortal_->inspector_agent()->StartInspectorIo();
 
-    closure(CanonicalCode::OK,
-            nullptr,
-            std::make_unique<InspectorStartResponseMessage>());
-  });
+        closure(CanonicalCode::OK,
+                nullptr,
+                std::make_unique<InspectorStartResponseMessage>());
+      });
 }
 
 void NoslatedDiagChannel::InspectorStartSession(
@@ -191,22 +192,23 @@ void NoslatedDiagChannel::TracingStart(
     Closure<TracingStartResponseMessage> closure) {
   per_process::Debug(DebugCategory::AGENT_CHANNEL,
                      "diagnostics channel tracing start\n");
-  immortal_->RequestInterrupt([req = req.release(), closure]() {
-    per_process::Debug(DebugCategory::AGENT_CHANNEL,
-                       "diagnostics channel tracing start interrupted\n");
-    TraceAgent* trace_agent =
-        aworker::tracing::TraceEventHelper::GetTraceAgent();
-    TraceAgent::SuspendTracingScope suspend(trace_agent);
+  immortal_->RequestInterrupt(
+      [req = req.release(), closure](Immortal* immortal, InterruptKind kind) {
+        per_process::Debug(DebugCategory::AGENT_CHANNEL,
+                           "diagnostics channel tracing start interrupted\n");
+        TraceAgent* trace_agent =
+            aworker::tracing::TraceEventHelper::GetTraceAgent();
+        TraceAgent::SuspendTracingScope suspend(trace_agent);
 
-    for (uint32_t idx = 0; idx < req->categories_size(); idx++) {
-      trace_agent->Enable(req->categories(idx));
-    }
+        for (uint32_t idx = 0; idx < req->categories_size(); idx++) {
+          trace_agent->Enable(req->categories(idx));
+        }
 
-    delete req;
-    closure(CanonicalCode::OK,
-            nullptr,
-            std::make_unique<TracingStartResponseMessage>());
-  });
+        delete req;
+        closure(CanonicalCode::OK,
+                nullptr,
+                std::make_unique<TracingStartResponseMessage>());
+      });
 }
 
 void NoslatedDiagChannel::TracingStop(
@@ -216,14 +218,15 @@ void NoslatedDiagChannel::TracingStop(
     Closure<TracingStopResponseMessage> closure) {
   per_process::Debug(DebugCategory::AGENT_CHANNEL,
                      "diagnostics channel tracing stop\n");
-  immortal_->RequestInterrupt([closure]() {
-    TraceAgent* trace_agent =
-        aworker::tracing::TraceEventHelper::GetTraceAgent();
-    trace_agent->Stop();
-    closure(CanonicalCode::OK,
-            nullptr,
-            std::make_unique<TracingStopResponseMessage>());
-  });
+  immortal_->RequestInterrupt(
+      [closure](Immortal* immortal, InterruptKind kind) {
+        TraceAgent* trace_agent =
+            aworker::tracing::TraceEventHelper::GetTraceAgent();
+        trace_agent->Stop();
+        closure(CanonicalCode::OK,
+                nullptr,
+                std::make_unique<TracingStopResponseMessage>());
+      });
 }
 
 void NoslatedDiagChannel::Disconnected(SessionId session_id) {

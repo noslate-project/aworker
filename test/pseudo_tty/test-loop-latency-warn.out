@@ -1,0 +1,9 @@
+Trace: Loop latency reached limit
+  at test (*/test/pseudo_tty/test-loop-latency-warn.js:6:3)
+  at main (*/test/pseudo_tty/test-loop-latency-warn.js:12:3)
+  at * (*/test/pseudo_tty/test-loop-latency-warn.js:18:1)
+  *
+Trace: Loop latency reached limit
+  at test (*/test/pseudo_tty/test-loop-latency-warn.js:6:3)
+  at (null) (*/test/pseudo_tty/test-loop-latency-warn.js:14:5)
+  *

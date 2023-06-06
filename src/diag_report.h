@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SRC_DIAG_REPORT_H_
+#define SRC_DIAG_REPORT_H_
 
 #ifndef _WIN32
 #include <sys/types.h>
@@ -82,3 +83,5 @@ class ReportWatchdog : public SignalWatchdog {
 
 }  // namespace report
 }  // namespace aworker
+
+#endif  // SRC_DIAG_REPORT_H_

@@ -213,9 +213,10 @@ void MainThreadInterface::Post(std::unique_ptr<Request> request) {
   requests_.push_back(std::move(request));
   if (needs_notify) {
     std::weak_ptr<MainThreadInterface> weak_self{shared_from_this()};
-    agent_->immortal()->RequestInterrupt([weak_self]() {
-      if (auto iface = weak_self.lock()) iface->DispatchMessages();
-    });
+    agent_->immortal()->RequestInterrupt(
+        [weak_self](Immortal* immortal, InterruptKind kind) {
+          if (auto iface = weak_self.lock()) iface->DispatchMessages();
+        });
   }
   incoming_message_cond_.notify_all();
 }
