@@ -200,8 +200,7 @@ void StartLoopLatencyWatchdogIfNeeded(const FunctionCallbackInfo<Value>& info) {
 
 #define ImmortalFunctions(V)                                                   \
   V(async_wrap_init_function, asyncWrapInitFunction)                           \
-  V(async_wrap_before_function, asyncWrapBeforeFunction)                       \
-  V(async_wrap_after_function, asyncWrapAfterFunction)                         \
+  V(callback_trampoline_function, callbackTrampolineFunction)                  \
   V(dom_exception_constructor, domExceptionConstructor)
 
 #define V(NAME, _)                                                             \

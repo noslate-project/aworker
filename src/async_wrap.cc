@@ -25,11 +25,9 @@ CallbackScope::CallbackScope(Immortal* immortal, Local<Object> resource)
     : immortal_(immortal), resource_(resource) {
   bottom_ = immortal_->callback_scope_stack_top();
   immortal_->set_callback_scope_stack_top(this);
-  AsyncWrap::EmitAsyncBefore(immortal_, resource_);
 }
 
 CallbackScope::~CallbackScope() {
-  AsyncWrap::EmitAsyncAfter(immortal_, resource_);
   immortal_->set_callback_scope_stack_top(bottom_);
 
   task_queue::TickTaskQueue(immortal_);
@@ -37,24 +35,7 @@ CallbackScope::~CallbackScope() {
 
 AsyncWrap::AsyncWrap(Immortal* immortal, Local<Object> handle)
     : BaseObject(immortal, handle) {
-  CallbackScope* current_scope = immortal->callback_scope_stack_top();
-  Local<Value> trigger_resource = Undefined(immortal->isolate());
-  if (current_scope != nullptr) {
-    trigger_resource = current_scope->resource();
-  }
-  AsyncWrap::EmitAsyncInit(immortal, handle, trigger_resource);
-}
-
-MaybeLocal<Value> AsyncWrap::MakeCallback(Local<Function> cb,
-                                          Local<Value> recv,
-                                          int argc,
-                                          Local<Value>* argv) {
-  EscapableHandleScope scope(immortal()->isolate());
-  CallbackScope callback_scope(immortal(), object());
-  Local<Context> context = immortal()->context();
-
-  MaybeLocal<Value> result = cb->Call(context, recv, argc, argv);
-  return scope.EscapeMaybe(result);
+  AsyncWrap::EmitAsyncInit(immortal, handle);
 }
 
 MaybeLocal<Value> AsyncWrap::MakeCallback(Local<Function> cb,
@@ -65,7 +46,17 @@ MaybeLocal<Value> AsyncWrap::MakeCallback(Local<Function> cb,
   Local<Object> recv = object();
   CallbackScope callback_scope(immortal(), recv);
 
-  MaybeLocal<Value> result = cb->Call(context, recv, argc, argv);
+  Local<Function> callback_trampoline =
+      immortal()->callback_trampoline_function();
+
+  std::vector<Local<Value>> actual_argv(argc + 1);
+  actual_argv[0] = cb;
+  for (int idx = 0; idx < argc; idx++) {
+    actual_argv[idx + 1] = argv[idx];
+  }
+
+  MaybeLocal<Value> result =
+      callback_trampoline->Call(context, recv, argc + 1, actual_argv.data());
   return scope.EscapeMaybe(result);
 }
 
@@ -92,9 +83,7 @@ void AsyncWrap::AddContext(Local<Context> context) {
 
 // TODO(chengzhong.wcz): trace support
 // TODO(chengzhong.wcz): name/type support
-void AsyncWrap::EmitAsyncInit(Immortal* immortal,
-                              Local<Object> resource,
-                              Local<Value> trigger_resource) {
+void AsyncWrap::EmitAsyncInit(Immortal* immortal, Local<Object> resource) {
   CHECK(!resource.IsEmpty());
 
   HandleScope scope(immortal->isolate());
@@ -102,42 +91,13 @@ void AsyncWrap::EmitAsyncInit(Immortal* immortal,
 
   Local<Value> argv[] = {
       resource,
-      trigger_resource,
   };
 
   TryCatchScope try_catch(immortal, CatchMode::kFatal);
-  USE(init_fn->Call(
-      immortal->context(), immortal->global_object(), arraysize(argv), argv));
-}
-
-void AsyncWrap::EmitAsyncBefore(Immortal* immortal, Local<Object> resource) {
-  CHECK(!resource.IsEmpty());
-
-  HandleScope scope(immortal->isolate());
-  Local<Function> before_fn = immortal->async_wrap_before_function();
-
-  Local<Value> argv[] = {
-      resource,
-  };
-
-  TryCatchScope try_catch(immortal, CatchMode::kFatal);
-  USE(before_fn->Call(
-      immortal->context(), immortal->global_object(), arraysize(argv), argv));
-}
-
-void AsyncWrap::EmitAsyncAfter(Immortal* immortal, Local<Object> resource) {
-  CHECK(!resource.IsEmpty());
-
-  HandleScope scope(immortal->isolate());
-  Local<Function> after_fn = immortal->async_wrap_after_function();
-
-  Local<Value> argv[] = {
-      resource,
-  };
-
-  TryCatchScope try_catch(immortal, CatchMode::kFatal);
-  USE(after_fn->Call(
-      immortal->context(), immortal->global_object(), arraysize(argv), argv));
+  USE(init_fn->Call(immortal->context(),
+                    v8::Undefined(immortal->isolate()),
+                    arraysize(argv),
+                    argv));
 }
 
 AWORKER_METHOD(AsyncWrap::SetJSPromiseHooks) {

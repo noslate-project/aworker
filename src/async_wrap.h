@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SRC_ASYNC_WRAP_H_
+#define SRC_ASYNC_WRAP_H_
 
 #include <list>
 #include <string>
@@ -29,15 +30,6 @@ class AsyncWrap : public BaseObject {
   explicit AsyncWrap(Immortal* immortal, v8::Local<v8::Object> handle);
   virtual ~AsyncWrap() = default;
 
-  // Receiver must be the object() to prevent from leaking to arbitrary targets.
-  [[deprecated(
-      "Use MakeCallback(v8::Local<v8::Function>,int,v8::Local<v8::Value>*) "
-      "instead")]] v8::MaybeLocal<v8::Value>
-  MakeCallback(v8::Local<v8::Function> cb,
-               v8::Local<v8::Value> recv,
-               int argc,
-               v8::Local<v8::Value>* argv);
-
   v8::MaybeLocal<v8::Value> MakeCallback(v8::Local<v8::Function> cb,
                                          int argc,
                                          v8::Local<v8::Value>* argv);
@@ -56,13 +48,7 @@ class AsyncWrap : public BaseObject {
   static AWORKER_METHOD(SetJSPromiseHooks);
 
  private:
-  static void EmitAsyncInit(Immortal* immortal,
-                            v8::Local<v8::Object> resource,
-                            v8::Local<v8::Value> trigger_resource);
-  static void EmitAsyncBefore(Immortal* immortal,
-                              v8::Local<v8::Object> resource);
-  static void EmitAsyncAfter(Immortal* immortal,
-                             v8::Local<v8::Object> resource);
+  static void EmitAsyncInit(Immortal* immortal, v8::Local<v8::Object> resource);
 
   friend CallbackScope;
 };
@@ -70,3 +56,5 @@ class AsyncWrap : public BaseObject {
 }  // namespace aworker
 
 #include "async_wrap-inl.h"
+
+#endif  // SRC_ASYNC_WRAP_H_

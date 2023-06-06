@@ -136,7 +136,7 @@ class KVStore {
   V(v8::Function, agent_channel_callback)                                      \
   V(v8::Function, agent_channel_handler)                                       \
   V(v8::Function, async_wrap_init_function)                                    \
-  V(v8::Function, async_wrap_before_function)                                  \
+  V(v8::Function, callback_trampoline_function)                                \
   V(v8::Function, async_wrap_after_function)                                   \
   V(v8::Function, dom_exception_constructor)                                   \
   V(v8::Function, module_wrap_dynamic_import_function)                         \
