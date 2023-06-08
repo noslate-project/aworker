@@ -341,7 +341,6 @@ void SnapshotBuilder::Generate(SnapshotData* out,
        */
       immortal->Bootstrap();
       CHECK_EQ(immortal->tracked_handle_wraps.size(), 0);
-      CHECK_EQ(immortal->tracked_base_objects.size(), 0);
       std::string filename = immortal->commandline_parser()->script_filename();
       if (!filename.empty()) {
         immortal->BootstrapPerExecution();

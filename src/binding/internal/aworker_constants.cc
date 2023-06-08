@@ -12,6 +12,7 @@ namespace constants {
 using v8::Isolate;
 using v8::Local;
 using v8::Object;
+using v8::ObjectTemplate;
 using v8::String;
 
 #define DEFINE_CONSTANT(target, constant)                                      \
@@ -76,6 +77,18 @@ void DefineMilestonesConstants(Local<Object> target) {
 #undef V
 }
 
+Local<Object> DefinePrivateSymbols(Immortal* immortal) {
+  Local<ObjectTemplate> tmpl = ObjectTemplate::New(immortal->isolate());
+#define V(PropertyName, _)                                                     \
+  tmpl->Set(OneByteString(immortal->isolate(), #PropertyName),                 \
+            immortal->PropertyName##_symbol());
+
+  PER_ISOLATE_PRIVATE_SYMBOL_PROPERTIES(V)
+#undef V
+
+  return tmpl->NewInstance(immortal->context()).ToLocalChecked();
+}
+
 AWORKER_BINDING(Init) {
   Isolate* isolate = immortal->isolate();
   Local<Object> tracing_constants = Object::New(isolate);
@@ -89,6 +102,9 @@ AWORKER_BINDING(Init) {
   Local<Object> perf_milestones = Object::New(isolate);
   CHECK(perf_milestones->SetPrototype(context, v8::Null(isolate)).FromJust());
   DefineMilestonesConstants(perf_milestones);
+
+  Local<Object> private_symbols = DefinePrivateSymbols(immortal);
+  CHECK(private_symbols->SetPrototype(context, v8::Null(isolate)).FromJust());
 
   DEFINE_CONSTANT_NAME(
       exports, WorkerState::kSerialized, WORKER_STATE_SERIALIZED);
@@ -113,6 +129,10 @@ AWORKER_BINDING(Init) {
       .Check();
 
   exports->Set(context, OneByteString(isolate, "milestones"), perf_milestones)
+      .Check();
+
+  exports
+      ->Set(context, OneByteString(isolate, "private_symbols"), private_symbols)
       .Check();
 }
 

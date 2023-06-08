@@ -156,7 +156,7 @@ CurlEasy::CurlEasy(Immortal* immortal, Local<Object> obj)
   struct curl_blob blob;
   blob.data = root_certs;
   blob.len = strlen(root_certs);
-  blob.flags = CURL_BLOB_COPY;
+  blob.flags = CURL_BLOB_NOCOPY;
   curl_easy_setopt(easy_handle_, CURLOPT_CAINFO_BLOB, &blob);
 
   curl_easy_setopt(easy_handle_, CURLOPT_HEADERDATA, this);

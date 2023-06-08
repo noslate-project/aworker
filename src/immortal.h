@@ -147,6 +147,7 @@ class KVStore {
   V(v8::Function, promise_resolve_hook)
 
 #define PER_ISOLATE_PRIVATE_SYMBOL_PROPERTIES(V)                               \
+  V(async_context_mapping, "aworker:async_context_mapping")                    \
   V(contextify_global_private, "aworker:contextify:global")
 
 #define PER_ISOLATE_STRING_PROPERTIES(V)                                       \
