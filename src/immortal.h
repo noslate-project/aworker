@@ -147,8 +147,14 @@ class KVStore {
   V(v8::Function, promise_resolve_hook)
 
 #define PER_ISOLATE_PRIVATE_SYMBOL_PROPERTIES(V)                               \
+  V(abort_controller_signal, "aworker:abort_controller_signal")                \
+  V(abort_signal_aborted, "aworker:abort_signal_aborted")                      \
+  V(agent_channel_stream_id, "aworker:agent_channel_stream_id")                \
   V(async_context_mapping, "aworker:async_context_mapping")                    \
-  V(contextify_global_private, "aworker:contextify:global")
+  V(contextify_global_private, "aworker:contextify:global")                    \
+  V(event_target_private, "aworker:event_target_private")                      \
+  V(promise_rejection, "aworker:promise_rejection")                            \
+  V(platform_private_options, "aworker:platform_private_options")
 
 #define PER_ISOLATE_STRING_PROPERTIES(V)                                       \
   V(emit_promise_rejection, "emitPromiseRejection")                            \
