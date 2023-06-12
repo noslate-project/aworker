@@ -27,6 +27,8 @@ using v8::Promise;
 using v8::PromiseRejectEvent;
 using v8::PromiseRejectMessage;
 using v8::ScriptOrigin;
+using v8::StackFrame;
+using v8::StackTrace;
 using v8::String;
 using v8::TryCatch;
 using v8::Undefined;
@@ -158,11 +160,28 @@ void FatalException(Isolate* isolate,
   fprintf(stderr, "FATAL: %s\n", *msg_utf8);
 
   PrintCaughtException(immortal->context(), exception);
+  PrintStackTrace(isolate, message);
   fflush(stderr);
 
   TryTriggerDiagReport(*msg_utf8, "FatalException", exception);
 
   ABORT();
+}
+
+void PrintStackTrace(Isolate* isolate, Local<Message> message) {
+  Local<StackTrace> stack = message->GetStackTrace();
+  int frame_count = stack->GetFrameCount();
+  for (int idx = 0; idx < frame_count; idx++) {
+    Local<StackFrame> frame = stack->GetFrame(isolate, idx);
+    Utf8Value function_name(isolate, frame->GetFunctionName());
+    Utf8Value script_name(isolate, frame->GetScriptName());
+    fprintf(stderr,
+            "  at %s (%s:%d:%d)\n",
+            *function_name,
+            *script_name,
+            frame->GetLineNumber(),
+            frame->GetColumn());
+  }
 }
 
 static std::string GetExceptionSource(Isolate* isolate,

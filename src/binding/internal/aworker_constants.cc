@@ -80,7 +80,7 @@ void DefineMilestonesConstants(Local<Object> target) {
 Local<Object> DefinePrivateSymbols(Immortal* immortal) {
   Local<ObjectTemplate> tmpl = ObjectTemplate::New(immortal->isolate());
 #define V(PropertyName, _)                                                     \
-  tmpl->Set(OneByteString(immortal->isolate(), #PropertyName),                 \
+  tmpl->Set(OneByteString(immortal->isolate(), #PropertyName "_symbol"),       \
             immortal->PropertyName##_symbol());
 
   PER_ISOLATE_PRIVATE_SYMBOL_PROPERTIES(V)

@@ -87,6 +87,7 @@ void PrintCaughtException(v8::Local<v8::Context> context,
                           const v8::TryCatch& try_catch);
 void PrintCaughtException(v8::Local<v8::Context> context,
                           v8::Local<v8::Value> exception);
+void PrintStackTrace(v8::Isolate* isolate, v8::Local<v8::Message> message);
 
 // Fatal handlers
 [[noreturn]] void FatalException(v8::Isolate* isolate,
