@@ -43,16 +43,9 @@ void TickTaskQueue(Immortal* immortal) {
     Local<Value> argv[0] = {};
     handled = tick_task_queue_function.As<Function>()->Call(
         context, context->Global(), 0, argv);
-    if (handled.IsEmpty()) {
-      return;
-    }
-
-    if (handled.ToLocalChecked()->IsTrue()) {
-      return;
-    }
+    DCHECK(!handled.IsEmpty());
+    USE(handled);
   }
-
-  TickTaskQueue(immortal);
 }
 
 AWORKER_METHOD(EnqueueMicrotask) {

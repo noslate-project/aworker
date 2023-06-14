@@ -661,8 +661,6 @@ void Immortal::StartLoopLatencyWatchdogIfNeeded() {
       commandline_parser()->long_task_threshold_ms(),
       commandline_parser()->loop_latency_limit_ms());
   watchdog_->StartIfNeeded();
-  // Initiate initial loop check.
-  loop_latency_watchdog_->OnCheck();
 }
 
 void Immortal::StartAgentChannel() {
@@ -754,18 +752,12 @@ v8::Maybe<bool> Immortal::StartExecution() {
 void Immortal::OnPrepare(uv_prepare_t* handle) {
   Immortal* immortal = ContainerOf(&Immortal::prepare_handle_, handle);
   immortal->isolate()->SetIdle(true);
-  if (immortal->loop_latency_watchdog_) {
-    immortal->loop_latency_watchdog_->OnPrepare();
-  }
 }
 
 // static
 void Immortal::OnCheck(uv_check_t* handle) {
   Immortal* immortal = ContainerOf(&Immortal::check_handle_, handle);
   immortal->isolate()->SetIdle(false);
-  if (immortal->loop_latency_watchdog_) {
-    immortal->loop_latency_watchdog_->OnCheck();
-  }
 }
 
 }  // namespace aworker

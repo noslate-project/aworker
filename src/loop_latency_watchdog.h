@@ -17,8 +17,8 @@ class LoopLatencyWatchdog : public WatchdogEntry {
   void ThreadEntry(uv_loop_t* loop) override;
   void ThreadAtExit() override;
 
-  void OnPrepare();
-  void OnCheck();
+  void CallbackPrologue();
+  void CallbackEpilogue();
 
  private:
   static void AsyncCallback(uv_async_t* handle);

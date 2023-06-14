@@ -7,6 +7,7 @@
 #include "error_handling.h"
 #include "immortal.h"
 #include "inspector/inspector_agent.h"
+#include "loop_latency_watchdog.h"
 #include "metadata.h"
 #include "uv.h"
 
@@ -188,9 +189,19 @@ AWORKER_METHOD(SetWorkerState) {
   }
 }
 
-void StartLoopLatencyWatchdogIfNeeded(const FunctionCallbackInfo<Value>& info) {
+void LoopLatencyWatchdogPrologue(const FunctionCallbackInfo<Value>& info) {
   Immortal* immortal = Immortal::GetCurrent(info);
   immortal->StartLoopLatencyWatchdogIfNeeded();
+  if (immortal->loop_latency_watchdog()) {
+    immortal->loop_latency_watchdog()->CallbackPrologue();
+  }
+}
+
+void LoopLatencyWatchdogEpilogue(const FunctionCallbackInfo<Value>& info) {
+  Immortal* immortal = Immortal::GetCurrent(info);
+  if (immortal->loop_latency_watchdog()) {
+    immortal->loop_latency_watchdog()->CallbackEpilogue();
+  }
 }
 
 #define METADATA_KEYS(V)                                                       \
@@ -234,9 +245,10 @@ AWORKER_BINDING(Init) {
 
   immortal->SetFunctionProperty(exports, "setWorkerState", SetWorkerState);
 
-  immortal->SetFunctionProperty(exports,
-                                "startLoopLatencyWatchdogIfNeeded",
-                                StartLoopLatencyWatchdogIfNeeded);
+  immortal->SetFunctionProperty(
+      exports, "loopLatencyWatchdogPrologue", LoopLatencyWatchdogPrologue);
+  immortal->SetFunctionProperty(
+      exports, "loopLatencyWatchdogEpilogue", LoopLatencyWatchdogEpilogue);
 
   Isolate* isolate = immortal->isolate();
 
@@ -287,7 +299,8 @@ AWORKER_EXTERNAL_REFERENCE(Init) {
   registry->Register(WriteStdxxx);
   registry->Register(IsATTY);
   registry->Register(SetWorkerState);
-  registry->Register(StartLoopLatencyWatchdogIfNeeded);
+  registry->Register(LoopLatencyWatchdogPrologue);
+  registry->Register(LoopLatencyWatchdogEpilogue);
 
 #define V(IT, NAME)                                                            \
   registry->Register(GetImmortalFunction##IT);                                 \

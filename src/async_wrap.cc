@@ -2,7 +2,7 @@
 #include "alarm_timer.h"
 #include "command_parser_group.h"
 #include "error_handling.h"
-#include "task_queue.h"
+#include "loop_latency_watchdog.h"
 
 namespace aworker {
 
@@ -29,8 +29,6 @@ CallbackScope::CallbackScope(Immortal* immortal, Local<Object> resource)
 
 CallbackScope::~CallbackScope() {
   immortal_->set_callback_scope_stack_top(bottom_);
-
-  task_queue::TickTaskQueue(immortal_);
 }
 
 AsyncWrap::AsyncWrap(Immortal* immortal, Local<Object> handle)
@@ -55,8 +53,14 @@ MaybeLocal<Value> AsyncWrap::MakeCallback(Local<Function> cb,
     actual_argv[idx + 1] = argv[idx];
   }
 
+  if (immortal()->loop_latency_watchdog()) {
+    immortal()->loop_latency_watchdog()->CallbackPrologue();
+  }
   MaybeLocal<Value> result =
       callback_trampoline->Call(context, recv, argc + 1, actual_argv.data());
+  if (immortal()->loop_latency_watchdog()) {
+    immortal()->loop_latency_watchdog()->CallbackEpilogue();
+  }
   return scope.EscapeMaybe(result);
 }
 

@@ -27,15 +27,15 @@ void LoopLatencyWatchdog::ThreadAtExit() {
   uv_close(reinterpret_cast<uv_handle_t*>(&fatal_timer_), nullptr);
 }
 
-void LoopLatencyWatchdog::OnPrepare() {
-  UniqueLock scoped_lock(idle_mutex_);
-  idle_ = true;
-}
-
-void LoopLatencyWatchdog::OnCheck() {
+void LoopLatencyWatchdog::CallbackPrologue() {
   UniqueLock scoped_lock(idle_mutex_);
   idle_ = false;
   uv_async_send(&async_);
+}
+
+void LoopLatencyWatchdog::CallbackEpilogue() {
+  UniqueLock scoped_lock(idle_mutex_);
+  idle_ = true;
 }
 
 // static
