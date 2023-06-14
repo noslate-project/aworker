@@ -338,6 +338,9 @@ class Immortal : public MemoryRetainer {
   inline Watchdog* watchdog() const {
     return watchdog_.get();
   }
+  inline LoopLatencyWatchdog* loop_latency_watchdog() const {
+    return loop_latency_watchdog_.get();
+  }
 
   std::set<binding::Binding*> loaded_internal_bindings;
   std::set<std::string> loaded_native_modules_with_cache;

@@ -9,10 +9,16 @@ function test() {
 }
 
 function main() {
-  test();
-  setTimeout(() => {
+  // Schedule two task in one loop tick.
+  setTimeout(function timer1() {
     test();
-  }, 1000);
+  }, 1);
+  setTimeout(function timer2() {
+    test();
+  }, 1);
+
+  // busy loop.
+  test();
 }
 
 main();

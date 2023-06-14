@@ -5,6 +5,7 @@
 #include "command_parser.h"
 #include "debug_utils.h"
 #include "error_handling.h"
+#include "loop_latency_watchdog.h"
 #include "task_queue.h"
 #include "util.h"
 
@@ -73,10 +74,19 @@ void NoslatedDataChannel::Callback(const uint32_t id,
   Local<Function> callback = immortal_->agent_channel_callback();
   Local<Number> v8_id = Number::New(isolate, id);
   Local<Value> argv[] = {v8_id, exception, params};
+
+  if (immortal_->loop_latency_watchdog()) {
+    immortal_->loop_latency_watchdog()->CallbackPrologue();
+  }
+
   auto ret = callback->Call(context, v8::Undefined(isolate), 3, argv);
   CHECK(!ret.IsEmpty());
 
   task_queue::TickTaskQueue(immortal_);
+
+  if (immortal_->loop_latency_watchdog()) {
+    immortal_->loop_latency_watchdog()->CallbackEpilogue();
+  }
 }
 
 void NoslatedDataChannel::Emit(const uint32_t id,
