@@ -243,14 +243,26 @@ int AworkerPlatform::NumberOfWorkerThreads() {
 }
 
 void AworkerPlatform::CallOnWorkerThread(unique_ptr<v8::Task> task) {
-  CHECK_EQ(thread_mode_, kMultiThread);
+  // Inspector may ignore the --single-threaded flag. Post the task to the
+  // foreground runner.
+  if (thread_mode_ == kSingleThread) {
+    task_runner_->PostNonNestableTask(std::move(task));
+    return;
+  }
   CHECK_NOT_NULL(worker_thread_platform_);
   worker_thread_platform_->CallOnWorkerThread(std::move(task));
 }
 
 void AworkerPlatform::CallDelayedOnWorkerThread(unique_ptr<v8::Task> task,
                                                 double delay) {
-  CHECK_EQ(thread_mode_, kMultiThread);
+  // Inspector may ignore the --single-threaded flag. Post the task to the
+  // foreground runner.
+  // TODO(chengzhong.wcz): this should be posted to worker threads for inspector
+  // timeouts to work properly.
+  if (thread_mode_ == kSingleThread) {
+    task_runner_->PostNonNestableDelayedTask(std::move(task), delay);
+    return;
+  }
   CHECK_NOT_NULL(worker_thread_platform_);
   worker_thread_platform_->CallDelayedOnWorkerThread(std::move(task), delay);
 }
