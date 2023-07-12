@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SRC_INSPECTOR_INSPECTOR_AGENT_H_
+#define SRC_INSPECTOR_INSPECTOR_AGENT_H_
 #include "immortal.h"
 #include "inspector/inspector_io.h"
 #include "v8-inspector.h"
@@ -11,13 +12,6 @@
 namespace aworker {
 namespace inspector {
 class AworkerInspectorClient;
-
-struct ContextInfo {
-  explicit ContextInfo(const std::string& name) : name(name) {}
-  const std::string name;
-  std::string origin;
-  bool is_default;
-};
 
 class InspectorSession {
  public:
@@ -84,3 +78,5 @@ class InspectorAgent {
 
 }  // namespace inspector
 }  // namespace aworker
+
+#endif  // SRC_INSPECTOR_INSPECTOR_AGENT_H_

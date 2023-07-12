@@ -89,7 +89,7 @@ class AworkerInspectorClient : public V8InspectorClient {
   AworkerInspectorClient(Immortal* immortal, std::string script_name)
       : immortal_(immortal) {
     inspector_ = V8Inspector::create(immortal_->isolate(), this);
-    ContextInfo info(script_name);
+    ContextInfo info{script_name, "", true};
     HandleScope scope(immortal_->isolate());
     contextCreated(immortal->context(), info);
   }
