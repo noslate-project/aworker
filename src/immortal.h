@@ -331,7 +331,7 @@ class Immortal : public MemoryRetainer {
   void RequestInterrupt(InterruptCallback&& callback);
   void ExhaustInterruptRequests(InterruptKind kind);
 
-  inline void AssignToContext(v8::Local<v8::Context> context);
+  void AssignToContext(v8::Local<v8::Context> context, const ContextInfo& info);
 
   inline v8::Local<v8::Object> global_object();
 

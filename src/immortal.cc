@@ -209,6 +209,7 @@ Immortal::Immortal(uv_loop_t* loop,
       macro_task_queue_(MacroTaskQueue::Create(
           loop, options->max_macro_task_count_per_tick())),
       isolate_data_(isolate_data) {
+  inspector_agent_ = std::make_shared<inspector::InspectorAgent>(this);
   interrupt_async_ = UvAsync<std::function<void()>>::Create(
       loop, [this]() { ExhaustInterruptRequests(InterruptKind::kIdle); });
   interrupt_async_->Unref();
@@ -323,7 +324,8 @@ void Immortal::Deserialize(const std::vector<size_t>* indexes) {
                             AworkerMainInstance::kMainContextIndex,
                             {DeserializeAworkerInternalFields, &des_context})
           .ToLocalChecked();
-  AssignToContext(context);
+  ContextInfo info{commandline_parser_->script_filename(), "", true};
+  AssignToContext(context, info);
   set_context(context);
 
 #define V(TypeName, name)                                                      \
@@ -345,9 +347,7 @@ void Immortal::Deserialize(const std::vector<size_t>* indexes) {
 }
 
 void Immortal::StopAgent() {
-  if (inspector_agent_ != nullptr) {
-    inspector_agent_->StopInspectorIo();
-  }
+  inspector_agent_->StopInspectorIo();
   /**
    * Shutdown watchdog thread before the diag channel and watchdogs destruction.
    */
@@ -506,6 +506,16 @@ void Immortal::ExhaustInterruptRequests(InterruptKind kind) {
   }
 }
 
+void Immortal::AssignToContext(v8::Local<v8::Context> context,
+                               const ContextInfo& info) {
+  ContextEmbedderTag::TagContext(context);
+  context->SetAlignedPointerInEmbedderData(ContextEmbedderIndex::kImmortal,
+                                           this);
+  context->SetAlignedPointerInEmbedderData(
+      ContextEmbedderIndex::kContextifyContext, nullptr);
+  inspector_agent_->ContextCreated(context, info);
+}
+
 void Immortal::InitializeIsolate() {
   isolate_->SetMicrotasksPolicy(v8::MicrotasksPolicy::kExplicit);
   isolate_->GetHeapProfiler()->AddBuildEmbedderGraphCallback(BuildEmbedderGraph,
@@ -520,7 +530,8 @@ void Immortal::InitializeDefaultContext() {
   HandleScope handle_scope(isolate());
 
   Local<Context> context = Context::New(isolate());
-  AssignToContext(context);
+  ContextInfo info{commandline_parser_->script_filename(), "", true};
+  AssignToContext(context, info);
   set_context(context);
 }
 
@@ -601,7 +612,6 @@ bool Immortal::BootstrapPureNativeModules() {
 }
 
 bool Immortal::BootstrapInspector() {
-  inspector_agent_ = std::make_shared<inspector::InspectorAgent>(this);
   std::string filename = commandline_parser_->script_filename();
   return inspector_agent_->Start(filename);
 }

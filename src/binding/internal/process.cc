@@ -80,8 +80,7 @@ AWORKER_METHOD(ConsoleCall) {
 
   SlicedArguments call_args(info, 2);
 
-  if (immortal->inspector_agent() != nullptr &&
-      immortal->inspector_agent()->IsActive()) {
+  if (immortal->inspector_agent()->IsActive()) {
     Local<Value> inspector_method = info[0];
     CHECK(inspector_method->IsFunction());
     MaybeLocal<Value> ret = inspector_method.As<Function>()->Call(
