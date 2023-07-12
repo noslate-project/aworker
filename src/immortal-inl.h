@@ -1,4 +1,5 @@
-#pragma once
+#ifndef SRC_IMMORTAL_INL_H_
+#define SRC_IMMORTAL_INL_H_
 
 #include "immortal.h"
 #include "util.h"
@@ -32,14 +33,6 @@ inline Immortal* Immortal::GetCurrent(const v8::PropertyCallbackInfo<T>& info) {
 
 inline v8::Local<v8::Object> Immortal::global_object() {
   return context()->Global();
-}
-
-inline void Immortal::AssignToContext(v8::Local<v8::Context> context) {
-  ContextEmbedderTag::TagContext(context);
-  context->SetAlignedPointerInEmbedderData(ContextEmbedderIndex::kImmortal,
-                                           this);
-  context->SetAlignedPointerInEmbedderData(
-      ContextEmbedderIndex::kContextifyContext, nullptr);
 }
 
 #define V(type, name)                                                          \
@@ -82,3 +75,5 @@ PER_ISOLATE_PRIVATE_SYMBOL_PROPERTIES(VP);
 #undef V
 
 }  // namespace aworker
+
+#endif  // SRC_IMMORTAL_INL_H_

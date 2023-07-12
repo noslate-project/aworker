@@ -65,7 +65,7 @@ void ContextWrap::MakeWeak() {
 
 Local<v8::Context> ContextWrap::CreateV8Context(Local<Object> sandbox,
                                                 const string& name,
-                                                const string& _origin) {
+                                                const string& origin) {
   Isolate* isolate = immortal()->isolate();
   EscapableHandleScope scope(isolate);
   Local<FunctionTemplate> function_template = FunctionTemplate::New(isolate);
@@ -88,7 +88,8 @@ Local<v8::Context> ContextWrap::CreateV8Context(Local<Object> sandbox,
 
   ctx->SetSecurityToken(immortal()->context()->GetSecurityToken());
 
-  immortal()->AssignToContext(ctx);
+  ContextInfo info{name, origin, false};
+  immortal()->AssignToContext(ctx, info);
   ctx->SetAlignedPointerInEmbedderData(ContextEmbedderIndex::kContextifyContext,
                                        this);
   // tie ctx with sandbox and bound context object's lifetime
