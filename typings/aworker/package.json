@@ -1,6 +1,6 @@
 {
   "name": "@noslate/aworker-types",
-  "version": "0.24.1",
+  "version": "0.24.2",
   "types": "lib.aworker.d.ts",
   "files": [
     "*.d.ts"
