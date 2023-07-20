@@ -1,4 +1,5 @@
 #include "inspector/inspector_agent.h"
+#include "debug_utils.h"
 #include "immortal.h"
 #include "inspector/main_thread_interface.h"
 #include "libplatform/libplatform.h"
@@ -75,6 +76,8 @@ class ChannelImpl final : public v8_inspector::V8Inspector::Channel {
   void flushProtocolNotifications() override {}
 
   void sendMessageToFrontend(const StringView& message) {
+    per_process::Debug(
+        DebugCategory::INSPECTOR, "%s\n", StringViewToUtf8(message));
     delegate_->SendMessageToFrontend(message);
   }
 

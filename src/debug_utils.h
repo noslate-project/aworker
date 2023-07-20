@@ -23,6 +23,7 @@
 namespace aworker {
 #define DEBUG_CATEGORY_NAMES(V)                                                \
   V(AGENT_CHANNEL)                                                             \
+  V(INSPECTOR)                                                                 \
   V(MACRO_TASK_QUEUE)                                                          \
   V(MKSNAPSHOT)                                                                \
   V(NATIVE_MODULE)                                                             \

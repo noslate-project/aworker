@@ -17,13 +17,15 @@ namespace inspector {
 void CallAndPauseOnFirstStatement(const FunctionCallbackInfo<Value>& info) {
   Immortal* immortal = Immortal::GetCurrent(info);
   Isolate* isolate = immortal->isolate();
-  if (info.Length() < 2) {
+  if (info.Length() < 1) {
     return THROW_ERR_INVALID_ARGUMENT(immortal, "Expect more than 1 argument");
   }
   if (!info[0]->IsFunction()) {
     return THROW_ERR_FUNCTION_EXPECTED(immortal,
                                        "First argument must be a function");
   }
+  Local<Value> receiver =
+      info.Length() >= 2 ? info[1] : v8::Undefined(isolate).As<Value>();
   SlicedArguments call_args(info, /* start */ 2);
   if (!immortal->inspector_agent()->IsActive()) {
     return THROW_ERR_INSPECTOR_NOT_ACTIVE(immortal, "Inspector is not active");
@@ -33,7 +35,7 @@ void CallAndPauseOnFirstStatement(const FunctionCallbackInfo<Value>& info) {
   }
   immortal->inspector_agent()->PauseOnNextJavascriptStatement("Break on call");
   MaybeLocal<Value> retval = info[0].As<Function>()->Call(
-      immortal->context(), info[1], call_args.size(), call_args.data());
+      immortal->context(), receiver, call_args.size(), call_args.data());
   if (!retval.IsEmpty()) {
     info.GetReturnValue().Set(retval.ToLocalChecked());
   }
